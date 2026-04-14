@@ -9,6 +9,8 @@ use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\CalculationController;
 use App\Http\Controllers\RankingController;
+use App\Http\Controllers\AssessmentPeriodController;
+use App\Http\Controllers\ParticipantExcelController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -27,6 +29,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Participants
+    Route::get('participants/template', [ParticipantExcelController::class, 'template'])->name('participants.template');
+    Route::post('participants/import', [ParticipantExcelController::class, 'import'])->name('participants.import');
     Route::resource('participants', ParticipantController::class);
 
     // Criteria & Weights
@@ -42,6 +46,10 @@ Route::middleware('auth')->group(function () {
 
     // Rankings
     Route::get('rankings', [RankingController::class, 'index'])->name('rankings.index');
+
+    // Assessment Periods
+    Route::post('periods/switch', [AssessmentPeriodController::class, 'switch'])->name('periods.switch');
+    Route::resource('periods', AssessmentPeriodController::class);
 });
 
 require __DIR__.'/auth.php';

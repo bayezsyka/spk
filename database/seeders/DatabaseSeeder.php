@@ -22,13 +22,25 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@example.com',
         ]);
 
+        $period = \App\Models\AssessmentPeriod::create([
+            'name' => 'Rekrutmen Gelombang 1',
+            'description' => 'Sesi penilaian untuk rekrutmen gelombang pertama tahun 2026.',
+            'is_active' => true,
+            'start_date' => now(),
+            'end_date' => now()->addMonths(3),
+        ]);
+
         $this->call([
             CriteriaSeeder::class,
         ]);
 
+        // Link criteria to period
+        \App\Models\Criterion::query()->update(['assessment_period_id' => $period->id]);
+
         for ($i = 1; $i <= 5; $i++) {
             $participant = \App\Models\Participant::create([
-                'full_name' => 'Peserta ' . $i,
+                'assessment_period_id' => $period->id,
+                'full_name' => 'Alternatif ' . $i,
                 'pre_test_score' => rand(50, 95),
                 'interview_grade' => ['Kurang Motivasi', 'Kurang Komunikatif', 'Cukup Komunikatif', 'Komunikatif', 'Sangat Komunikatif'][rand(0, 4)],
                 'report_score' => rand(70, 95),
@@ -38,7 +50,7 @@ class DatabaseSeeder extends Seeder
             ]);
 
             // Create placeholder scores
-            foreach (\App\Models\Criterion::all() as $criterion) {
+            foreach (\App\Models\Criterion::where('assessment_period_id', $period->id)->get() as $criterion) {
                 \App\Models\ParticipantScore::create([
                     'participant_id' => $participant->id,
                     'criterion_id' => $criterion->id,

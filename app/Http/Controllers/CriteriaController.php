@@ -11,7 +11,7 @@ class CriteriaController extends Controller
 {
     public function index()
     {
-        $criteria = Criterion::orderBy('code')->get();
+        $criteria = Criterion::forActivePeriod()->orderBy('code')->get();
         return Inertia::render('Criteria/Index', [
             'criteria' => $criteria,
         ]);
@@ -19,7 +19,12 @@ class CriteriaController extends Controller
 
     public function weights()
     {
-        $weights = CriterionWeight::with('criterion')->get();
+        $weights = CriterionWeight::whereHas('criterion', function($q) {
+                $q->forActivePeriod();
+            })
+            ->with('criterion')
+            ->get();
+            
         return Inertia::render('Criteria/Weights', [
             'weights' => $weights,
         ]);

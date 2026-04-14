@@ -11,4 +11,7 @@ export type PageProps<
     auth: {
         user: User;
     };
+    active_period_id: number | null;
+    active_period: any;
+    assessment_periods: any[];
 };

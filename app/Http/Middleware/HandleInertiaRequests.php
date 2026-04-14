@@ -34,6 +34,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'assessment_periods' => \App\Models\AssessmentPeriod::all(),
+            'active_period_id' => session('active_period_id'),
+            'active_period' => \App\Models\AssessmentPeriod::find(session('active_period_id')),
         ];
     }
 }

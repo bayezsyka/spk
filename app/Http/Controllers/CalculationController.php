@@ -20,7 +20,7 @@ class CalculationController extends Controller
 
     public function processEdas(BwmWeightService $bwmService, EdasCalculationService $edasService)
     {
-        $participants = Participant::all()->toArray();
+        $participants = Participant::forActivePeriod()->get()->toArray();
         $weights = $bwmService->getFinalWeights();
         
         $edasResults = $edasService->calculate($participants, $weights);
@@ -38,7 +38,7 @@ class CalculationController extends Controller
     public function processCopeland(BwmWeightService $bwmService, EdasCalculationService $edasService, CopelandScoreService $copelandService)
     {
         // For dummy purpose, run EDAS first then Copeland
-        $participants = Participant::all()->toArray();
+        $participants = Participant::forActivePeriod()->get()->toArray();
         $weights = $bwmService->getFinalWeights();
         $edasResults = $edasService->calculate($participants, $weights);
         
@@ -46,8 +46,9 @@ class CalculationController extends Controller
 
         $run = CalculationRun::create([
             'run_code' => 'RUN-' . time(),
+            'assessment_period_id' => session('active_period_id'),
             'method_stage' => 'COMPLETED',
-            'description' => 'Dummy combined calculation run',
+            'description' => 'Combined calculation run for ' . (session('active_period_name') ?? 'Active Period'),
             'executed_at' => now(),
         ]);
 

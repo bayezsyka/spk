@@ -11,7 +11,7 @@ class RankingController extends Controller
 {
     public function index()
     {
-        $latestRun = CalculationRun::latest('executed_at')->first();
+        $latestRun = CalculationRun::forActivePeriod()->latest('executed_at')->first();
         
         $results = [];
         if ($latestRun) {

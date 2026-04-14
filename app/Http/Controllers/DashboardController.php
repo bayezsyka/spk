@@ -12,8 +12,8 @@ class DashboardController extends Controller
     public function index()
     {
         return Inertia::render('Dashboard', [
-            'totalParticipants' => Participant::count(),
-            'totalActiveCriteria' => Criterion::where('is_active', true)->count(),
+            'totalParticipants' => Participant::forActivePeriod()->count(),
+            'totalActiveCriteria' => Criterion::forActivePeriod()->where('is_active', true)->count(),
         ]);
     }
 }

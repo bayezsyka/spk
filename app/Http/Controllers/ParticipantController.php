@@ -14,7 +14,8 @@ class ParticipantController extends Controller
     {
         $search = $request->input('search');
         
-        $participants = Participant::when($search, function($query, $search) {
+        $participants = Participant::forActivePeriod()
+            ->when($search, function($query, $search) {
                 $query->where('full_name', 'like', "%{$search}%");
             })
             ->latest()
@@ -44,10 +45,12 @@ class ParticipantController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        $validated['assessment_period_id'] = session('active_period_id');
+
         $participant = Participant::create($validated);
 
-        // Sync empty scores for all criteria
-        foreach (Criterion::all() as $criterion) {
+        // Sync empty scores for all criteria in ACTIVE PERIOD
+        foreach (Criterion::forActivePeriod()->get() as $criterion) {
             ParticipantScore::create([
                 'participant_id' => $participant->id,
                 'criterion_id' => $criterion->id,
