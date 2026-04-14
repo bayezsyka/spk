@@ -12,6 +12,11 @@ class CalculationRun extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'stage_payload' => 'array',
+        'executed_at' => 'datetime',
+    ];
+
     public function assessmentPeriod()
     {
         return $this->belongsTo(AssessmentPeriod::class);

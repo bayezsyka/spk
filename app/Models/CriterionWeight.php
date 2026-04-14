@@ -12,4 +12,9 @@ class CriterionWeight extends Model
     {
         return $this->belongsTo(Criterion::class);
     }
+
+    public function assessmentPeriod()
+    {
+        return $this->belongsTo(AssessmentPeriod::class);
+    }
 }

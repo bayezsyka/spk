@@ -1,8 +1,21 @@
 import Breadcrumbs from '@/Components/Breadcrumbs';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 export default function Dashboard({ totalParticipants, totalActiveCriteria, active_period }: any) {
+    const { pipeline_state } = usePage().props as any;
+
+    const stepLabels: Record<string, string> = {
+        setup: 'Konfigurasi Awal',
+        scoring: 'Input Nilai',
+        bwm: 'Pembobotan BWM',
+        edas: 'Kalkulasi EDAS',
+        copeland: 'Copeland Score',
+        completed: 'Selesai',
+    };
+
+    const stepProgress = pipeline_state ? Math.round(((pipeline_state.current_step - 1) / 5) * 100) : 0;
+
     return (
         <AuthenticatedLayout
             header={
@@ -21,7 +34,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
 
             <div className="space-y-8">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/50 group hover:border-indigo-500 transition-all">
                         <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,47 +73,78 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                         </Link>
                     </div>
 
+                    {/* Pipeline Status Card */}
                     <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
                         <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest relative z-10">Periode Aktif</h3>
                         <div className="mt-3 relative z-10">
                             <div className="text-xl font-bold text-slate-900 leading-tight">{active_period?.name || 'Tidak ada sesi aktif'}</div>
-                            <div className="mt-2 text-[10px] font-bold py-1 px-2.5 bg-indigo-50 text-indigo-700 rounded-lg inline-block border border-indigo-100">
-                                SEDANG BERJALAN
-                            </div>
+                            {pipeline_state && (
+                                <div className="mt-3 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-black py-1 px-2.5 bg-indigo-50 text-indigo-700 rounded-lg inline-block border border-indigo-100 uppercase tracking-widest">
+                                            {stepLabels[pipeline_state.status] || pipeline_state.status}
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-400">{pipeline_state.current_step}/6</span>
+                                    </div>
+                                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-700"
+                                            style={{ width: `${stepProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="mt-6 relative z-10 space-y-3">
-                            <Link href={route('rankings.index')} className="block w-full text-center px-4 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors">
-                                Hasil Perankingan
-                            </Link>
+                            {active_period ? (
+                                <Link
+                                    href={route('pipeline.index', active_period.id)}
+                                    className="block w-full text-center px-4 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
+                                >
+                                    ⚡ Buka Pipeline Analisis
+                                </Link>
+                            ) : (
+                                <Link
+                                    href={route('periods.index')}
+                                    className="block w-full text-center px-4 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"
+                                >
+                                    Kelola Periode
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* Quick Actions / Getting Started */}
+                {/* Pipeline Flow Overview */}
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                        <h3 className="text-xl font-bold text-slate-900">Alur Perhitungan SPK</h3>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Metode: BWM + EDAS + COPELAND</span>
+                    <div className="p-8 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-900">Alur Perhitungan SPK</h3>
+                            <p className="text-sm text-slate-500 mt-1">Pipeline linear untuk memastikan proses perhitungan berjalan berurutan.</p>
+                        </div>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest shrink-0">BWM → EDAS → COPELAND</span>
                     </div>
-                    <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="space-y-4">
-                            <div className="text-4xl font-black text-slate-100">01</div>
-                            <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider">Tahap Pembobotan</h4>
-                            <p className="text-sm text-slate-500 leading-relaxed uppercase">Menentukan bobot prioritas setiap kriteria menggunakan metode Best-Worst Method (BWM).</p>
-                        </div>
-                        <div className="space-y-4 border-l border-slate-100 pl-8">
-                            <div className="text-4xl font-black text-slate-100">02</div>
-                            <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider">Kalkulasi EDAS</h4>
-                            <p className="text-sm text-slate-500 leading-relaxed uppercase">Menghitung skor evaluasi setiap alternatif berdasarkan jarak rata-rata solusi (EDAS).</p>
-                            <Link href={route('calculations.edas')} className="inline-flex py-1.5 px-3 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-bold hover:bg-indigo-100 transition-colors">MULAI PROSES EDAS</Link>
-                        </div>
-                        <div className="space-y-4 border-l border-slate-100 pl-8">
-                            <div className="text-4xl font-black text-slate-100">03</div>
-                            <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider">Copeland Scoring</h4>
-                            <p className="text-sm text-slate-500 leading-relaxed uppercase">Agregasi hasil akhir dan penentuan peringkat final menggunakan sistem perbandingan Copeland.</p>
-                            <Link href={route('calculations.copeland')} className="inline-flex py-1.5 px-3 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-bold hover:bg-emerald-100 transition-colors">MULAI PROSES COPELAND</Link>
-                        </div>
+                    <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                        {[
+                            { num: '01', title: 'Konfigurasi & BWM', desc: 'Setup kriteria, input peserta, dan hitung bobot prioritas dengan Best-Worst Method.', color: 'indigo' },
+                            { num: '02', title: 'Kalkulasi EDAS', desc: 'Evaluasi jarak rata-rata solusi untuk menghasilkan Appraisal Score setiap peserta.', color: 'blue' },
+                            { num: '03', title: 'Copeland & Ranking', desc: 'Perbandingan berpasangan dan penentuan peringkat final melalui net wins.', color: 'emerald' },
+                        ].map((step, i) => (
+                            <div key={i} className={`space-y-4 ${i > 0 ? 'sm:border-l sm:border-slate-100 sm:pl-8' : ''}`}>
+                                <div className="text-4xl font-black text-slate-100">{step.num}</div>
+                                <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider">{step.title}</h4>
+                                <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+                                {active_period && (
+                                    <Link
+                                        href={route('pipeline.index', active_period.id)}
+                                        className={`inline-flex py-1.5 px-3 bg-${step.color}-50 text-${step.color}-700 rounded-lg text-[10px] font-bold hover:bg-${step.color}-100 transition-colors border border-${step.color}-100`}
+                                    >
+                                        BUKA PIPELINE
+                                    </Link>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
