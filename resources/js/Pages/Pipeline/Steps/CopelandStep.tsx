@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import ProcessButton from '@/Components/Pipeline/ProcessButton';
 import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
+import PipelineGuide from '@/Components/Pipeline/PipelineGuide';
 
 interface Props {
     period: any;
@@ -52,8 +53,9 @@ export default function CopelandStep({ period, stepData, onNavigateStep }: Props
         <div className="space-y-5">
             <PipelineActionBar
                 title="Pemeringkatan Copeland"
-                subtitle="Langkah 4: Perbandingan berpasangan dan skor akhir Copeland"
+                subtitle={`Tahap 5 dari 6 | ${period.name}`}
                 onBack={() => onNavigateStep(3)}
+                guide={<PipelineGuide phaseKey="copeland" />}
                 actions={
                     !hasResult ? (
                         <ProcessButton
@@ -80,24 +82,17 @@ export default function CopelandStep({ period, stepData, onNavigateStep }: Props
                 }
             />
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Deskripsi Metode</h3>
-                <p className="text-slate-500 text-sm mt-1 max-w-2xl">
-                    Metode Copeland Score membandingkan setiap peserta secara berpasangan (*pairwise*) untuk menghitung jumlah kemenangan dan kekalahan.
-                </p>
-            </div>
-
             {!hasResult && (
-                <div className="bg-white rounded-xl border border-slate-200 p-10 shadow-sm text-center space-y-5">
+                <div className="bg-white rounded-xl border border-slate-200 p-10 shadow-sm text-center space-y-4">
                     <div className="w-16 h-16 mx-auto bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center">
                         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
                     <div>
-                        <h4 className="text-base font-medium text-slate-900">Siap Menghitung Copeland</h4>
-                        <p className="text-sm text-slate-500 mt-1.5 max-w-md mx-auto">
-                            Sistem akan membandingkan skor EDAS antar peserta, lalu menghitung Menang, Kalah, Imbang, dan ranking akhir.
+                        <h4 className="text-base font-medium text-slate-900">Belum ada hasil Copeland</h4>
+                        <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">
+                            Jalankan Copeland setelah hasil EDAS tersedia untuk semua peserta.
                         </p>
                     </div>
                 </div>
@@ -186,10 +181,6 @@ export default function CopelandStep({ period, stepData, onNavigateStep }: Props
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-
-                    <div className="flex items-center justify-center p-4">
-                         <p className="text-xs text-slate-400 italic">Hasil kalkulasi Copeland ditampilkan di atas. Gunakan navigasi di bagian atas untuk lanjut.</p>
                     </div>
                 </div>
             )}

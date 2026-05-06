@@ -2,6 +2,7 @@ import { useForm } from '@inertiajs/react';
 import ProcessButton from '@/Components/Pipeline/ProcessButton';
 import HeatmapMatrix from '@/Components/Pipeline/HeatmapMatrix';
 import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
+import PipelineGuide from '@/Components/Pipeline/PipelineGuide';
 
 interface Props {
     period: any;
@@ -35,8 +36,9 @@ export default function EdasStep({ period, stepData, onNavigateStep }: Props) {
         <div className="space-y-5">
             <PipelineActionBar
                 title="Kalkulasi EDAS"
-                subtitle="Langkah 3: Penghitungan Solusi Rata-rata, PDA, dan NDA"
+                subtitle={`Tahap 4 dari 6 | ${period.name}`}
                 onBack={() => onNavigateStep(2)}
+                guide={<PipelineGuide phaseKey="edas" />}
                 actions={
                     !hasResult ? (
                         <ProcessButton
@@ -62,24 +64,17 @@ export default function EdasStep({ period, stepData, onNavigateStep }: Props) {
                 }
             />
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Deskripsi Metode</h3>
-                <p className="text-slate-500 text-sm mt-1 max-w-2xl">
-                    Evaluation based on Distance from Average Solution (EDAS) menghitung deviasi positif dan negatif dari solusi rata-rata untuk menentukan peringkat peserta.
-                </p>
-            </div>
-
             {!hasResult && (
-                <div className="bg-white rounded-xl border border-slate-200 p-10 shadow-sm text-center space-y-5">
+                <div className="bg-white rounded-xl border border-slate-200 p-10 shadow-sm text-center space-y-4">
                     <div className="w-16 h-16 mx-auto bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center">
                         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                     </div>
                     <div>
-                        <h4 className="text-base font-medium text-slate-900">Siap Menghitung EDAS</h4>
-                        <p className="text-sm text-slate-500 mt-1.5 max-w-md mx-auto">
-                            Proses ini akan membangun matriks keputusan, menghitung solusi rata-rata, lalu menghasilkan PDA, NDA, SP, SN, NSP, NSN, dan Appraisal Score.
+                        <h4 className="text-base font-medium text-slate-900">Belum ada hasil EDAS</h4>
+                        <p className="mx-auto mt-1.5 max-w-md text-sm text-slate-500">
+                            Jalankan proses EDAS saat data peserta dan bobot BWM sudah siap.
                         </p>
                     </div>
                 </div>
@@ -143,10 +138,6 @@ export default function EdasStep({ period, stepData, onNavigateStep }: Props) {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-
-                    <div className="flex items-center justify-center p-4">
-                         <p className="text-xs text-slate-400 italic">Hasil kalkulasi EDAS ditampilkan di atas. Gunakan navigasi di bagian atas untuk lanjut.</p>
                     </div>
                 </div>
             )}

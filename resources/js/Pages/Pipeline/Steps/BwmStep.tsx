@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import ProcessButton from '@/Components/Pipeline/ProcessButton';
 import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
+import PipelineGuide from '@/Components/Pipeline/PipelineGuide';
 
 interface Props {
     period: any;
@@ -47,8 +48,9 @@ export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
         <div className="space-y-5">
             <PipelineActionBar
                 title="Pembobotan BWM"
-                subtitle="Langkah 2: Menentukan bobot kriteria melalui perbandingan Best-to-Worst"
+                subtitle={`Tahap 3 dari 6 | ${period.name}`}
                 onBack={() => onNavigateStep(1)}
+                guide={<PipelineGuide phaseKey="bwm" />}
                 actions={
                     !hasResult ? (
                         bestId && worstId && (
@@ -75,22 +77,6 @@ export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
                     )
                 }
             />
-
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Deskripsi Metode</h3>
-                <p className="text-slate-500 text-sm mt-1 max-w-2xl">
-                    Best-Worst Method menentukan bobot prioritas berdasarkan input kriteria terbaik, kriteria prioritas terendah,
-                    vektor Kriteria Terbaik ke Kriteria Lain, dan vektor Kriteria Lain ke Kriteria Prioritas Terendah.
-                </p>
-                <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
-                    <p className="text-xs text-indigo-700 flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>Kriteria yang dibandingkan dengan dirinya sendiri otomatis bernilai 1.</span>
-                    </p>
-                </div>
-            </div>
 
             {!hasResult && (
                 <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
@@ -227,11 +213,6 @@ export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
                         </div>
                     )}
 
-                    {bestId && worstId && (
-                        <div className="flex items-center justify-center pt-2">
-                             <p className="text-xs text-slate-400 italic">Silakan klik tombol "Hitung Bobot BWM" di bagian atas halaman.</p>
-                        </div>
-                    )}
                 </div>
             )}
 
@@ -301,10 +282,6 @@ export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
                                 </p>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="flex items-center justify-center">
-                         <p className="text-xs text-slate-400 italic">Hasil kalkulasi BWM ditampilkan di atas. Gunakan navigasi di bagian atas untuk lanjut.</p>
                     </div>
                 </div>
             )}

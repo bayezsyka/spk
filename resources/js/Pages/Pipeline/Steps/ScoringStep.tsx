@@ -1,6 +1,7 @@
 import { router, Link } from '@inertiajs/react';
 import EmptyState from '@/Components/UI/EmptyState';
 import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
+import PipelineGuide from '@/Components/Pipeline/PipelineGuide';
 
 interface Props {
     period: any;
@@ -30,9 +31,10 @@ export default function ScoringStep({ period, stepData, pipelineState, onNavigat
     return (
         <div className="space-y-5">
             <PipelineActionBar
-                title="Input Peserta & Nilai"
-                subtitle="Langkah 2: Kelola data peserta dan pastikan semua skor terisi"
+                title="Pengisian Nilai"
+                subtitle={`Tahap 2 dari 6 | ${period.name}`}
                 onBack={() => onNavigateStep(0)}
+                guide={<PipelineGuide phaseKey="scoring" />}
                 actions={
                     <div className="flex items-center gap-2">
                          <button
@@ -67,28 +69,21 @@ export default function ScoringStep({ period, stepData, pipelineState, onNavigat
                 }
             />
 
-            {/* Header */}
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 className="text-lg font-semibold text-slate-900">
-                            Manajemen Peserta
-                        </h3>
-                        <p className="text-slate-500 text-sm mt-1">
-                            Kelola data peserta dan nilai kriteria untuk periode ini.
-                        </p>
+                        <h3 className="text-base font-semibold text-slate-900">Data Peserta</h3>
+                        <p className="mt-1 text-sm text-slate-500">Periksa peserta dan kelengkapan nilai sebelum perhitungan dimulai.</p>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                        <Link
-                            href={route('participants.index')}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-700 text-sm font-medium rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            Kelola Semua Peserta
-                        </Link>
-                    </div>
+                    <Link
+                        href={route('participants.index')}
+                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Kelola Semua Peserta
+                    </Link>
                 </div>
             </div>
 
@@ -173,10 +168,6 @@ export default function ScoringStep({ period, stepData, pipelineState, onNavigat
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <div className="flex items-center justify-center p-4">
-                 <div className="text-xs text-slate-400 italic">Gunakan bar navigasi di bagian atas untuk melanjutkan ke tahap berikutnya.</div>
             </div>
         </div>
     );

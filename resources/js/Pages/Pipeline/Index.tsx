@@ -11,12 +11,12 @@ import ResultStep from './Steps/ResultStep';
 import { useState } from 'react';
 
 const STEPS = [
-    { key: 'setup', label: 'Konfigurasi', stepNumber: 1, description: 'Kriteria Inti' },
-    { key: 'scoring', label: 'Input Nilai', stepNumber: 2, description: 'Peserta & Skor' },
-    { key: 'bwm', label: 'BWM', stepNumber: 3, description: 'Bobot Prioritas' },
-    { key: 'edas', label: 'EDAS', stepNumber: 4, description: 'PDA / NDA' },
-    { key: 'copeland', label: 'Copeland', stepNumber: 5, description: 'Perbandingan' },
-    { key: 'result', label: 'Hasil Akhir', stepNumber: 6, description: 'Peringkat' },
+    { key: 'setup', label: 'Kriteria', stepNumber: 1, description: 'Konfigurasi' },
+    { key: 'scoring', label: 'Pengisian Nilai', stepNumber: 2, description: 'Peserta & Nilai' },
+    { key: 'bwm', label: 'BWM', stepNumber: 3, description: 'Bobot Kriteria' },
+    { key: 'edas', label: 'EDAS', stepNumber: 4, description: 'Skor Peserta' },
+    { key: 'copeland', label: 'Copeland', stepNumber: 5, description: 'Peringkat' },
+    { key: 'result', label: 'Hasil Akhir', stepNumber: 6, description: 'Rekomendasi' },
 ];
 
 export default function PipelineIndex({ period, pipelineState, stepData, completedRuns, finalResults }: any) {

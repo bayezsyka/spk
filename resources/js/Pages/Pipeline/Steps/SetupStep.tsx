@@ -3,6 +3,7 @@ import { useState } from 'react';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import EmptyState from '@/Components/UI/EmptyState';
 import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
+import PipelineGuide from '@/Components/Pipeline/PipelineGuide';
 
 interface Props {
     period: any;
@@ -85,7 +86,8 @@ export default function SetupStep({ period, stepData, pipelineState, onNavigateS
         <div className="space-y-5">
             <PipelineActionBar
                 title="Konfigurasi Kriteria"
-                subtitle={`Langkah 1: Mengatur kriteria inti untuk periode ${period.name}`}
+                subtitle={`Tahap 1 dari 6 | ${period.name}`}
+                guide={<PipelineGuide phaseKey="setup" />}
                 actions={
                     <>
                         {criteria.length >= 5 && !isCompleted && (
@@ -114,14 +116,18 @@ export default function SetupStep({ period, stepData, pipelineState, onNavigateS
                 }
             />
 
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Informasi Kriteria</h4>
-                        <p className="text-slate-500 text-sm mt-1">
-                            Sistem ini menggunakan kriteria inti yang telah ditentukan. Kode C1 sampai C5 tidak dapat diubah.
-                        </p>
-                    </div>
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                <div className="flex flex-wrap items-center gap-3">
+                    <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                        {criteria.length} kriteria aktif
+                    </span>
+                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
+                        criteria.length >= 5
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-amber-50 text-amber-700'
+                    }`}>
+                        {criteria.length >= 5 ? 'Siap lanjut' : 'Lengkapi hingga 5 kriteria'}
+                    </span>
                 </div>
             </div>
 
@@ -293,10 +299,6 @@ export default function SetupStep({ period, stepData, pipelineState, onNavigateS
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <div className="flex items-center justify-center p-4">
-                <div className="text-xs text-slate-400 italic">Gunakan bar navigasi di bagian atas untuk melanjutkan ke tahap berikutnya.</div>
             </div>
         </div>
     );

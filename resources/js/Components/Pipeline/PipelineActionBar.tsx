@@ -4,10 +4,11 @@ interface Props {
     title: string;
     subtitle?: string;
     onBack?: () => void;
+    guide?: ReactNode;
     actions?: ReactNode;
 }
 
-export default function PipelineActionBar({ title, subtitle, onBack, actions }: Props) {
+export default function PipelineActionBar({ title, subtitle, onBack, guide, actions }: Props) {
     return (
         <div className="sticky top-[56px] -mt-2 -mx-1 px-1 py-3 z-30 pointer-events-none">
             <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-slate-200 shadow-lg shadow-slate-200/50 flex items-center justify-between pointer-events-auto">
@@ -30,6 +31,7 @@ export default function PipelineActionBar({ title, subtitle, onBack, actions }: 
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {guide}
                     {actions}
                 </div>
             </div>
