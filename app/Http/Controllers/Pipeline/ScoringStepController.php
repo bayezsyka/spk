@@ -7,6 +7,7 @@ use App\Models\AssessmentPeriod;
 use App\Models\Participant;
 use App\Models\ParticipantScore;
 use App\Models\Criterion;
+use App\Services\Participants\ParticipantScoreSyncService;
 use Illuminate\Http\Request;
 
 class ScoringStepController extends Controller
@@ -23,7 +24,14 @@ class ScoringStepController extends Controller
             'scores.*.raw_value' => 'required|numeric',
         ]);
 
+        $participantIds = Participant::where('assessment_period_id', $period->id)->pluck('id');
+        $criterionIds = Criterion::where('assessment_period_id', $period->id)->pluck('id');
+
         foreach ($validated['scores'] as $score) {
+            if (!$participantIds->contains($score['participant_id']) || !$criterionIds->contains($score['criterion_id'])) {
+                return back()->with('error', 'Terdapat skor yang tidak sesuai dengan periode aktif.');
+            }
+
             ParticipantScore::updateOrCreate(
                 [
                     'participant_id' => $score['participant_id'],
@@ -42,51 +50,9 @@ class ScoringStepController extends Controller
      * Auto-populate scores from participant columns to the scoring matrix.
      * Maps the fixed participant fields (pre_test_score, etc.) to their criteria.
      */
-    public function autoPopulate(AssessmentPeriod $period)
+    public function autoPopulate(AssessmentPeriod $period, ParticipantScoreSyncService $scoreSyncService)
     {
-        $criteria = Criterion::where('assessment_period_id', $period->id)
-            ->orderBy('sort_order')
-            ->get();
-
-        $participants = Participant::where('assessment_period_id', $period->id)->get();
-
-        // Column-to-code mapping (based on the known criteria structure)
-        $fieldMap = [
-            'C1' => 'pre_test_score',
-            'C2' => 'interview_grade',  // Will need subscale conversion
-            'C3' => 'report_score',
-            'C4' => 'domicile_distance_km',
-            'C5' => 'work_readiness_grade', // Will need subscale conversion
-        ];
-
-        $count = 0;
-        foreach ($participants as $participant) {
-            foreach ($criteria as $criterion) {
-                $field = $fieldMap[$criterion->code] ?? null;
-                if (!$field) continue;
-
-                $rawValue = $participant->{$field};
-
-                // If the criterion is categorical, convert the label to numeric via subscales
-                if ($criterion->input_type === 'categorical' && is_string($rawValue)) {
-                    $subscale = $criterion->subscales()
-                        ->where('label', $rawValue)
-                        ->first();
-                    $rawValue = $subscale?->numeric_value ?? 0;
-                }
-
-                ParticipantScore::updateOrCreate(
-                    [
-                        'participant_id' => $participant->id,
-                        'criterion_id' => $criterion->id,
-                    ],
-                    [
-                        'raw_value' => (float) $rawValue,
-                    ]
-                );
-                $count++;
-            }
-        }
+        $count = $scoreSyncService->syncPeriod($period);
 
         return back()->with('success', "{$count} skor berhasil dimuat secara otomatis dari data peserta.");
     }

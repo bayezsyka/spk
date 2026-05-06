@@ -1,9 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\AssessmentPeriodController;
@@ -17,15 +15,10 @@ use App\Http\Controllers\Pipeline\CopelandStepController;
 use App\Http\Controllers\Pipeline\ResultStepController;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect()->route('login');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -35,7 +28,7 @@ Route::middleware('auth')->group(function () {
     // ── Assessment Periods (full CRUD + reset) ──────
     Route::post('periods/switch', [AssessmentPeriodController::class, 'switch'])->name('periods.switch');
     Route::post('periods/{period}/reset', [AssessmentPeriodController::class, 'resetSession'])->name('periods.reset');
-    Route::resource('periods', AssessmentPeriodController::class);
+    Route::resource('periods', AssessmentPeriodController::class)->except(['create', 'show']);
 
     // ── Pipeline Routes (Core SPK Flow) ─────────────
     // {period} uses ULID via getRouteKeyName()
@@ -74,7 +67,7 @@ Route::middleware('auth')->group(function () {
     // ── Participants (standalone CRUD) ──
     Route::get('participants/template', [ParticipantExcelController::class, 'template'])->name('participants.template');
     Route::post('participants/import', [ParticipantExcelController::class, 'import'])->name('participants.import');
-    Route::resource('participants', ParticipantController::class);
+    Route::resource('participants', ParticipantController::class)->except(['show']);
 });
 
 require __DIR__.'/auth.php';

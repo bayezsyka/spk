@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import ProcessButton from '@/Components/Pipeline/ProcessButton';
+import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
 
 interface Props {
     period: any;
@@ -10,7 +11,7 @@ interface Props {
     onNavigateStep: (step: number) => void;
 }
 
-export default function BwmStep({ period, stepData, pipelineState, completedRuns, onNavigateStep }: Props) {
+export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
     const criteria = stepData.setup?.criteria || [];
     const bwmData = stepData.bwm;
     const hasResult = !!bwmData?.runPayload;
@@ -19,15 +20,16 @@ export default function BwmStep({ period, stepData, pipelineState, completedRuns
     const [worstId, setWorstId] = useState<number | ''>(bwmData?.comparison?.worst_criterion_id || '');
     const [processing, setProcessing] = useState(false);
 
-    // Initialize comparison vectors
-    const initVector = (savedValues: any) => {
-        const vec: Record<number, number> = {};
-        criteria.forEach((c: any) => { vec[c.id] = savedValues?.[c.id] || 1; });
-        return vec;
+    const initializeVector = (savedValues: any) => {
+        const vector: Record<number, number> = {};
+        criteria.forEach((criterion: any) => {
+            vector[criterion.id] = savedValues?.[criterion.id] || 1;
+        });
+        return vector;
     };
 
-    const [bestToOthers, setBestToOthers] = useState<Record<number, number>>(initVector(bwmData?.comparison?.best_to_others));
-    const [othersToWorst, setOthersToWorst] = useState<Record<number, number>>(initVector(bwmData?.comparison?.others_to_worst));
+    const [bestToOthers, setBestToOthers] = useState<Record<number, number>>(initializeVector(bwmData?.comparison?.best_to_others));
+    const [othersToWorst, setOthersToWorst] = useState<Record<number, number>>(initializeVector(bwmData?.comparison?.others_to_worst));
 
     const handleProcess = () => {
         setProcessing(true);
@@ -43,215 +45,266 @@ export default function BwmStep({ period, stepData, pipelineState, completedRuns
 
     return (
         <div className="space-y-5">
-            {/* Header */}
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Pembobotan BWM</h3>
-                <p className="text-slate-500 text-sm mt-1 max-w-xl">
-                    Best-Worst Method (BWM) menentukan bobot prioritas setiap kriteria.
-                    Pilih kriteria terbaik & terburuk, lalu berikan nilai preferensi (1-9) untuk setiap perbandingan.
-                </p>
-            </div>
-
-            {/* BWM Input Form */}
-            {!hasResult && (
-                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
-                    {/* Best & Worst Selection */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                                Kriteria Terbaik (Best)
-                            </label>
-                            <select
-                                value={bestId}
-                                onChange={e => setBestId(Number(e.target.value))}
-                                className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="">Pilih kriteria terbaik...</option>
-                                {criteria.map((c: any) => (
-                                    <option key={c.id} value={c.id} disabled={c.id === worstId}>
-                                        {c.code} — {c.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                                Kriteria Terburuk (Worst)
-                            </label>
-                            <select
-                                value={worstId}
-                                onChange={e => setWorstId(Number(e.target.value))}
-                                className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="">Pilih kriteria terburuk...</option>
-                                {criteria.map((c: any) => (
-                                    <option key={c.id} value={c.id} disabled={c.id === bestId}>
-                                        {c.code} — {c.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Best-to-Others Vector */}
-                    {bestId && (
-                        <div>
-                            <h4 className="text-sm font-medium text-slate-900 mb-3">
-                                Preferensi: Best → Others <span className="text-xs text-slate-400">(1 = sama penting, 9 = sangat lebih penting)</span>
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {criteria.filter((c: any) => c.id !== bestId).map((c: any) => (
-                                    <div key={c.id} className="flex items-center gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-                                        <span className="w-9 h-9 rounded-md bg-white border border-slate-200 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0">
-                                            {c.code}
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-medium text-slate-700 truncate">{c.name}</p>
-                                            <input
-                                                type="range"
-                                                min={1}
-                                                max={9}
-                                                value={bestToOthers[c.id] || 1}
-                                                onChange={e => setBestToOthers(prev => ({ ...prev, [c.id]: Number(e.target.value) }))}
-                                                className="w-full h-1 bg-indigo-100 rounded-full appearance-none cursor-pointer accent-indigo-600 mt-1.5"
-                                            />
-                                        </div>
-                                        <span className="text-sm font-semibold text-indigo-600 w-6 text-center">
-                                            {bestToOthers[c.id] || 1}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Others-to-Worst Vector */}
-                    {worstId && (
-                        <div>
-                            <h4 className="text-sm font-medium text-slate-900 mb-3">
-                                Preferensi: Others → Worst <span className="text-xs text-slate-400">(1 = sama penting, 9 = sangat lebih penting)</span>
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {criteria.filter((c: any) => c.id !== worstId).map((c: any) => (
-                                    <div key={c.id} className="flex items-center gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-                                        <span className="w-9 h-9 rounded-md bg-white border border-slate-200 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0">
-                                            {c.code}
-                                        </span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-medium text-slate-700 truncate">{c.name}</p>
-                                            <input
-                                                type="range"
-                                                min={1}
-                                                max={9}
-                                                value={othersToWorst[c.id] || 1}
-                                                onChange={e => setOthersToWorst(prev => ({ ...prev, [c.id]: Number(e.target.value) }))}
-                                                className="w-full h-1 bg-violet-100 rounded-full appearance-none cursor-pointer accent-violet-600 mt-1.5"
-                                            />
-                                        </div>
-                                        <span className="text-sm font-semibold text-violet-600 w-6 text-center">
-                                            {othersToWorst[c.id] || 1}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Process Button */}
-                    {bestId && worstId && (
-                        <div className="flex items-center justify-between pt-2">
-                            <button
-                                onClick={() => onNavigateStep(1)}
-                                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                                </svg>
-                                Kembali
-                            </button>
+            <PipelineActionBar
+                title="Pembobotan BWM"
+                subtitle="Langkah 2: Menentukan bobot kriteria melalui perbandingan Best-to-Worst"
+                onBack={() => onNavigateStep(1)}
+                actions={
+                    !hasResult ? (
+                        bestId && worstId && (
                             <ProcessButton
                                 processing={processing}
                                 onClick={handleProcess}
                                 label="Hitung Bobot BWM"
                                 loadingLabel="Menghitung..."
                             />
+                        )
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded hidden sm:inline">BWM SELESAI</span>
+                            <button
+                                onClick={() => onNavigateStep(3)}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                            >
+                                <span>Lanjut ke EDAS</span>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                    )
+                }
+            />
+
+            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                <h3 className="text-lg font-semibold text-slate-900">Deskripsi Metode</h3>
+                <p className="text-slate-500 text-sm mt-1 max-w-2xl">
+                    Best-Worst Method menentukan bobot prioritas berdasarkan input kriteria terbaik, kriteria prioritas terendah,
+                    vektor Kriteria Terbaik ke Kriteria Lain, dan vektor Kriteria Lain ke Kriteria Prioritas Terendah.
+                </p>
+                <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
+                    <p className="text-xs text-indigo-700 flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Kriteria yang dibandingkan dengan dirinya sendiri otomatis bernilai 1.</span>
+                    </p>
+                </div>
+            </div>
+
+            {!hasResult && (
+                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1.5">Kriteria Terbaik</label>
+                            <select
+                                value={bestId}
+                                onChange={(event) => {
+                                    const val = event.target.value === '' ? '' : Number(event.target.value);
+                                    setBestId(val);
+                                    if (val !== '') {
+                                        setBestToOthers(prev => ({ ...prev, [val]: 1 }));
+                                    }
+                                }}
+                                className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                                <option value="">Pilih kriteria terbaik...</option>
+                                {criteria.map((criterion: any) => (
+                                    <option key={criterion.id} value={criterion.id} disabled={criterion.id === worstId}>
+                                        {criterion.code} - {criterion.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1.5">Kriteria Prioritas Terendah</label>
+                            <select
+                                value={worstId}
+                                onChange={(event) => {
+                                    const val = event.target.value === '' ? '' : Number(event.target.value);
+                                    setWorstId(val);
+                                    if (val !== '') {
+                                        setOthersToWorst(prev => ({ ...prev, [val]: 1 }));
+                                    }
+                                }}
+                                className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                            >
+                                <option value="">Pilih kriteria prioritas terendah...</option>
+                                {criteria.map((criterion: any) => (
+                                    <option key={criterion.id} value={criterion.id} disabled={criterion.id === bestId}>
+                                        {criterion.code} - {criterion.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {bestId && (
+                        <div>
+                            <h4 className="text-sm font-medium text-slate-900 mb-3">
+                                Preferensi Kriteria Terbaik ke Kriteria Lain
+                                <span className="text-xs text-slate-400"> (1 = sama penting, 9 = jauh lebih penting)</span>
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {criteria.map((criterion: any) => {
+                                    const isSelf = criterion.id === bestId;
+                                    return (
+                                        <div key={criterion.id} className={`flex items-center gap-3 rounded-lg p-3 border transition-all ${isSelf ? 'bg-slate-100 border-slate-300 opacity-80' : 'bg-slate-50 border-slate-100 hover:border-indigo-200'}`}>
+                                            <span className={`w-9 h-9 rounded-md flex items-center justify-center text-xs font-medium shrink-0 border ${isSelf ? 'bg-slate-200 border-slate-400 text-slate-600' : 'bg-white border-slate-200 text-slate-600'}`}>
+                                                {criterion.code}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-xs font-medium truncate ${isSelf ? 'text-slate-500' : 'text-slate-700'}`}>{criterion.name}</p>
+                                                {isSelf ? (
+                                                    <p className="text-[10px] text-slate-500 mt-1 font-medium italic flex items-center gap-1">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                        </svg>
+                                                        Otomatis 1
+                                                    </p>
+                                                ) : (
+                                                    <input
+                                                        type="range"
+                                                        min={1}
+                                                        max={9}
+                                                        value={bestToOthers[criterion.id] || 1}
+                                                        onChange={(event) => setBestToOthers((previous) => ({ ...previous, [criterion.id]: Number(event.target.value) }))}
+                                                        className="w-full h-1 bg-indigo-100 rounded-full appearance-none cursor-pointer accent-indigo-600 mt-1.5"
+                                                    />
+                                                )}
+                                            </div>
+                                            <span className={`text-sm font-semibold w-6 text-center ${isSelf ? 'text-slate-400' : 'text-indigo-600'}`}>
+                                                {isSelf ? 1 : (bestToOthers[criterion.id] || 1)}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {worstId && (
+                        <div>
+                            <h4 className="text-sm font-medium text-slate-900 mb-3">
+                                Preferensi Kriteria Lain ke Kriteria Prioritas Terendah
+                                <span className="text-xs text-slate-400"> (1 = sama penting, 9 = jauh lebih penting)</span>
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {criteria.map((criterion: any) => {
+                                    const isSelf = criterion.id === worstId;
+                                    return (
+                                        <div key={criterion.id} className={`flex items-center gap-3 rounded-lg p-3 border transition-all ${isSelf ? 'bg-slate-100 border-slate-300 opacity-80' : 'bg-slate-50 border-slate-100 hover:border-amber-200'}`}>
+                                            <span className={`w-9 h-9 rounded-md flex items-center justify-center text-xs font-medium shrink-0 border ${isSelf ? 'bg-slate-200 border-slate-400 text-slate-600' : 'bg-white border-slate-200 text-slate-600'}`}>
+                                                {criterion.code}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-xs font-medium truncate ${isSelf ? 'text-slate-500' : 'text-slate-700'}`}>{criterion.name}</p>
+                                                {isSelf ? (
+                                                    <p className="text-[10px] text-slate-500 mt-1 font-medium italic flex items-center gap-1">
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                        </svg>
+                                                        Otomatis 1
+                                                    </p>
+                                                ) : (
+                                                    <input
+                                                        type="range"
+                                                        min={1}
+                                                        max={9}
+                                                        value={othersToWorst[criterion.id] || 1}
+                                                        onChange={(event) => setOthersToWorst((previous) => ({ ...previous, [criterion.id]: Number(event.target.value) }))}
+                                                        className="w-full h-1 bg-amber-100 rounded-full appearance-none cursor-pointer accent-amber-600 mt-1.5"
+                                                    />
+                                                )}
+                                            </div>
+                                            <span className={`text-sm font-semibold w-6 text-center ${isSelf ? 'text-slate-400' : 'text-amber-600'}`}>
+                                                {isSelf ? 1 : (othersToWorst[criterion.id] || 1)}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {bestId && worstId && (
+                        <div className="flex items-center justify-center pt-2">
+                             <p className="text-xs text-slate-400 italic">Silakan klik tombol "Hitung Bobot BWM" di bagian atas halaman.</p>
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Results Display */}
             {hasResult && (
                 <div className="space-y-5">
-                    {/* Weight Results */}
-                    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                        <h4 className="font-medium text-slate-900 text-sm mb-5">Bobot Hasil BWM</h4>
-                        <div className="space-y-3">
-                            {bwmData.weights?.map((w: any) => {
-                                const percentage = (w.weight_value * 100);
-                                return (
-                                    <div key={w.id} className="flex items-center gap-3">
-                                        <span className="w-9 h-9 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-medium border border-indigo-100 shrink-0">
-                                            {w.criterion?.code}
-                                        </span>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="text-xs font-medium text-slate-700">{w.criterion?.name}</span>
-                                                <span className="text-xs font-semibold text-indigo-600">{percentage.toFixed(1)}%</span>
-                                            </div>
-                                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-indigo-500 rounded-full transition-all duration-500"
-                                                    style={{ width: `${percentage}%` }}
-                                                />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm lg:col-span-2">
+                            <h4 className="font-medium text-slate-900 text-sm mb-5">Bobot Kriteria</h4>
+                            <div className="space-y-3">
+                                {bwmData.weights?.map((weight: any) => {
+                                    const percentage = weight.weight_value * 100;
+                                    return (
+                                        <div key={weight.id} className="flex items-center gap-3">
+                                            <span className="w-9 h-9 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-medium border border-indigo-100 shrink-0">
+                                                {weight.criterion?.code}
+                                            </span>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-xs font-medium text-slate-700">{weight.criterion?.name}</span>
+                                                    <span className="text-xs font-semibold text-indigo-600">{percentage.toFixed(2)}%</span>
+                                                </div>
+                                                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-indigo-500 rounded-full transition-all duration-500" style={{ width: `${percentage}%` }} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
 
-                        {bwmData.runPayload?.consistency_ratio !== undefined && (
-                            <div className="mt-5 p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-3">
-                                <span className="text-xs text-slate-500">Consistency Ratio:</span>
-                                <span className={`text-sm font-semibold ${bwmData.runPayload.consistency_ratio <= 0.1 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                    {bwmData.runPayload.consistency_ratio.toFixed(4)}
-                                </span>
-                                {bwmData.runPayload.consistency_ratio <= 0.1 && (
-                                    <span className="text-[10px] font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Konsisten</span>
-                                )}
+                        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+                            <div>
+                                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Deviasi Maksimum / Xi</p>
+                                <p className="mt-1 text-lg font-semibold text-slate-900">{Number(bwmData.runPayload?.xi || 0).toFixed(6)}</p>
                             </div>
-                        )}
+                            <div>
+                                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Consistency Ratio</p>
+                                <p className="mt-1 text-lg font-semibold text-slate-900">{Number(bwmData.runPayload?.consistency_ratio || 0).toFixed(6)}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Status Konsistensi</p>
+                                <span className={`mt-2 inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                    bwmData.runPayload?.consistency_status === 'konsisten'
+                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                }`}>
+                                    {bwmData.runPayload?.consistency_status === 'konsisten' ? 'Konsisten' : 'Belum Konsisten'}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Navigate */}
-                    <div className="flex items-center justify-between">
-                        <button
-                            onClick={() => onNavigateStep(1)}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                            </svg>
-                            Kembali
-                        </button>
-                        <div className="flex items-center gap-3">
-                            <span className="text-sm text-emerald-600 font-medium flex items-center gap-1.5">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                BWM selesai
-                            </span>
-                            <button
-                                onClick={() => onNavigateStep(3)}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                            >
-                                Lanjut ke EDAS
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </button>
+                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 className="font-medium text-slate-900 text-sm mb-4">Ringkasan Input BWM</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p className="text-slate-500 mb-1">Kriteria Terbaik</p>
+                                <p className="font-medium text-slate-900">
+                                    {criteria.find((criterion: any) => criterion.id === bwmData.runPayload?.best_criterion_id)?.name || '-'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-slate-500 mb-1">Kriteria Prioritas Terendah</p>
+                                <p className="font-medium text-slate-900">
+                                    {criteria.find((criterion: any) => criterion.id === bwmData.runPayload?.worst_criterion_id)?.name || '-'}
+                                </p>
+                            </div>
                         </div>
+                    </div>
+
+                    <div className="flex items-center justify-center">
+                         <p className="text-xs text-slate-400 italic">Hasil kalkulasi BWM ditampilkan di atas. Gunakan navigasi di bagian atas untuk lanjut.</p>
                     </div>
                 </div>
             )}

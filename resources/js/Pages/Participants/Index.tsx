@@ -106,8 +106,8 @@ export default function Index({ participants, filters, active_period }: any) {
                                     <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap</th>
                                     <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Pre-Test</th>
                                     <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Wawancara</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Raport</th>
-                                    <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Domisili</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Rapor</th>
+                                    <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Jarak Domisili</th>
                                     <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Kesiapan</th>
                                     <th className="py-4 px-6 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>
                                 </tr>

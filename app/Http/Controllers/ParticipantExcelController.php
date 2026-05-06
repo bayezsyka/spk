@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Participant;
+use App\Models\Criterion;
+use App\Services\Participants\ParticipantScoreSyncService;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ParticipantExcelController extends Controller
 {
@@ -22,8 +25,8 @@ class ParticipantExcelController extends Controller
             'Nama Lengkap', 
             'Pre Test (Nilai 0-100)', 
             'Wawancara (Kualitatif)', 
-            'Nilai Raport (Nilai 0-100)', 
-            'Domisili (Jarak km)', 
+            'Nilai Rapor (Nilai 0-100)', 
+            'Jarak Domisili (km)', 
             'Kesiapan Kerja'
         ];
 
@@ -47,7 +50,7 @@ class ParticipantExcelController extends Controller
         exit;
     }
 
-    public function import(Request $request)
+    public function import(Request $request, ParticipantScoreSyncService $scoreSyncService)
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls'
@@ -67,28 +70,141 @@ class ParticipantExcelController extends Controller
         // Skip header
         array_shift($rows);
 
+        $criteria = Criterion::where('assessment_period_id', $activePeriodId)
+            ->with('subscales')
+            ->orderBy('sort_order')
+            ->get()
+            ->keyBy('code');
+
+        $requiredCriteria = collect(['C1', 'C2', 'C3', 'C4', 'C5']);
+        $missingCriteria = $requiredCriteria->diff($criteria->keys());
+
+        if ($missingCriteria->isNotEmpty()) {
+            return back()->with('error', 'Import dibatalkan karena konfigurasi kriteria periode belum lengkap.');
+        }
+
+        $existingNames = Participant::where('assessment_period_id', $activePeriodId)
+            ->pluck('full_name')
+            ->map(fn($name) => Str::of((string) $name)->squish()->lower()->value())
+            ->flip();
+
+        $errors = [];
+        $preparedRows = [];
+        $seenNames = [];
+
+        foreach ($rows as $index => $row) {
+            $lineNumber = $index + 2;
+            $fullName = Str::of((string) ($row[1] ?? ''))->squish()->value();
+
+            if ($fullName === '') {
+                continue;
+            }
+
+            $normalizedName = Str::of($fullName)->lower()->value();
+
+            if (isset($seenNames[$normalizedName])) {
+                $errors[] = "Baris {$lineNumber}: nama peserta duplikat di file impor.";
+                continue;
+            }
+
+            if ($existingNames->has($normalizedName)) {
+                $errors[] = "Baris {$lineNumber}: peserta \"{$fullName}\" sudah ada pada periode aktif.";
+                continue;
+            }
+
+            $preTest = $this->parseScore($row[2] ?? null, 'Pre-Test', $lineNumber, 0, 100, $errors);
+            $interview = Str::of((string) ($row[3] ?? ''))->squish()->value();
+            $report = $this->parseScore($row[4] ?? null, 'Nilai Rapor', $lineNumber, 0, 100, $errors);
+            $distance = $this->parseScore($row[5] ?? null, 'Jarak Domisili', $lineNumber, 0, null, $errors);
+            $readiness = Str::of((string) ($row[6] ?? ''))->squish()->value();
+
+            if ($interview === '') {
+                $errors[] = "Baris {$lineNumber}: nilai Wawancara wajib diisi.";
+                continue;
+            }
+
+            if ($readiness === '') {
+                $errors[] = "Baris {$lineNumber}: nilai Kesiapan Kerja wajib diisi.";
+                continue;
+            }
+
+            try {
+                $scoreSyncService->resolveCategoricalValue($criteria['C2'], $interview);
+            } catch (\InvalidArgumentException $exception) {
+                $errors[] = "Baris {$lineNumber}: {$exception->getMessage()}";
+                continue;
+            }
+
+            try {
+                $scoreSyncService->resolveCategoricalValue($criteria['C5'], $readiness);
+            } catch (\InvalidArgumentException $exception) {
+                $errors[] = "Baris {$lineNumber}: {$exception->getMessage()}";
+                continue;
+            }
+
+            if ($preTest === null || $report === null || $distance === null) {
+                continue;
+            }
+
+            $preparedRows[] = [
+                'full_name' => $fullName,
+                'pre_test_score' => $preTest,
+                'interview_grade' => $interview,
+                'report_score' => $report,
+                'domicile_distance_km' => $distance,
+                'work_readiness_grade' => $readiness,
+                'assessment_period_id' => $activePeriodId,
+                'is_active' => true,
+            ];
+
+            $seenNames[$normalizedName] = true;
+        }
+
+        if ($errors !== []) {
+            $message = implode(' ', array_slice($errors, 0, 5));
+            if (count($errors) > 5) {
+                $message .= ' Terdapat error tambahan pada baris lain.';
+            }
+
+            return back()->with('error', "Import dibatalkan. {$message}");
+        }
+
         DB::beginTransaction();
         try {
-            foreach ($rows as $row) {
-                // skip if name is empty
-                if (empty($row[1])) continue;
+            $criteriaCollection = $criteria->values();
 
-                Participant::create([
-                    'full_name' => $row[1],
-                    'pre_test_score' => $row[2] ?? 0,
-                    'interview_grade' => $row[3],
-                    'report_score' => $row[4] ?? 0,
-                    'domicile_distance_km' => $row[5] ?? 0,
-                    'work_readiness_grade' => $row[6],
-                    'assessment_period_id' => $activePeriodId,
-                    'is_active' => true
-                ]);
+            foreach ($preparedRows as $participantData) {
+                $participant = Participant::create($participantData);
+                $scoreSyncService->syncParticipant($participant, $criteriaCollection);
             }
             DB::commit();
-            return back()->with('success', 'Data peserta berhasil diimport.');
+            return back()->with('success', count($preparedRows) . ' data peserta berhasil diimpor dan skor awal disinkronkan.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal mengimport data: ' . $e->getMessage());
         }
+    }
+
+    private function parseScore(mixed $value, string $label, int $lineNumber, float $min, ?float $max, array &$errors): ?float
+    {
+        if ($value === null || $value === '') {
+            $errors[] = "Baris {$lineNumber}: {$label} wajib diisi.";
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            $errors[] = "Baris {$lineNumber}: {$label} harus berupa angka.";
+            return null;
+        }
+
+        $number = (float) $value;
+
+        if ($number < $min || ($max !== null && $number > $max)) {
+            $range = $max !== null ? "{$min}-{$max}" : "minimal {$min}";
+            $errors[] = "Baris {$lineNumber}: {$label} harus berada pada rentang {$range}.";
+            return null;
+        }
+
+        return $number;
     }
 }

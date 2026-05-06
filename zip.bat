@@ -24,6 +24,7 @@ tar ^
 --exclude=bootstrap/cache ^
 --exclude=.idea ^
 --exclude=.vscode ^
+--exclude=public/hot ^
 --exclude=*.log ^
 --exclude=*.zip ^
 -a -cf "%ZIP_PATH%" *

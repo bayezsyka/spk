@@ -1,7 +1,10 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import Dropdown from '@/Components/Dropdown';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { PropsWithChildren } from 'react';
+import Modal from '@/Components/Modal';
+import DangerButton from '@/Components/DangerButton';
+import SecondaryButton from '@/Components/SecondaryButton';
+import { PropsWithChildren, useState } from 'react';
 
 interface PipelineLayoutProps {
     period: any;
@@ -15,8 +18,15 @@ export default function PipelineLayout({
 }: PropsWithChildren<PipelineLayoutProps>) {
     const { auth } = usePage().props as any;
     const user = auth.user;
+    const [confirmingReset, setConfirmingReset] = useState(false);
 
     const stepProgress = Math.round(((pipelineState.currentStep - 1) / 5) * 100);
+
+    const handleReset = () => {
+        router.post(route('periods.reset', period.route_key), {}, {
+            onFinish: () => setConfirmingReset(false),
+        });
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
@@ -29,7 +39,7 @@ export default function PipelineLayout({
                                 <div className="p-1.5 bg-indigo-600 rounded-lg group-hover:bg-indigo-700 transition-colors">
                                     <ApplicationLogo className="block h-4 w-auto fill-current text-white" />
                                 </div>
-                                <span className="font-bold text-sm text-slate-900 hidden sm:block tracking-tight">SmartSPK</span>
+                                <span className="font-bold text-sm text-slate-900 hidden sm:block tracking-tight">SPK LPKS</span>
                             </Link>
 
                             <div className="h-6 w-px bg-slate-200 hidden sm:block" />
@@ -60,12 +70,24 @@ export default function PipelineLayout({
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-100">
                                 <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
                                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hidden sm:inline">
-                                    Step {pipelineState.currentStep}/6
+                                    Tahap {pipelineState.currentStep}/6
                                 </span>
                                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest sm:hidden">
                                     {pipelineState.currentStep}/6
                                 </span>
                             </div>
+
+                            {/* Reset Button */}
+                            <button
+                                onClick={() => setConfirmingReset(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-full transition-all"
+                                title="Reset alur untuk periode ini"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span className="hidden lg:inline uppercase tracking-widest">RESET ALUR</span>
+                            </button>
 
                             {/* Mini progress bar */}
                             <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
@@ -88,9 +110,9 @@ export default function PipelineLayout({
                                             <p className="text-sm font-bold text-slate-900">{user.name}</p>
                                             <p className="text-[10px] text-slate-400">{user.email}</p>
                                         </div>
-                                        <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                        <Dropdown.Link href={route('profile.edit')}>Profil</Dropdown.Link>
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
-                                            Log Out
+                                            Keluar
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -106,6 +128,26 @@ export default function PipelineLayout({
                     {children}
                 </div>
             </main>
+            {/* Reset Confirmation Modal */}
+            <Modal show={confirmingReset} onClose={() => setConfirmingReset(false)}>
+                <div className="p-6">
+                    <h2 className="text-lg font-bold text-slate-900">
+                        Reset Seluruh Alur Penilaian?
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                        Tindakan ini akan menghapus seluruh data peserta, nilai kriteria, dan hasil perhitungan (BWM, EDAS, Copeland) untuk periode <span className="font-bold text-slate-900">{period.name}</span>. 
+                        Data kriteria inti tidak akan dihapus. Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                    <div className="mt-6 flex justify-end gap-3">
+                        <SecondaryButton onClick={() => setConfirmingReset(false)}>
+                            Batal
+                        </SecondaryButton>
+                        <DangerButton onClick={handleReset}>
+                            Ya, Reset Sekarang
+                        </DangerButton>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

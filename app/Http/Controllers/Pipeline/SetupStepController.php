@@ -15,56 +15,7 @@ class SetupStepController extends Controller
      */
     public function storeCriteria(Request $request, AssessmentPeriod $period)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:10',
-            'name' => 'required|string|max:255',
-            'attribute_type' => 'required|in:benefit,cost',
-            'input_type' => 'required|in:numeric,categorical',
-            'description' => 'nullable|string',
-            'subscales' => 'nullable|array',
-            'subscales.*.label' => 'required_with:subscales|string',
-            'subscales.*.numeric_value' => 'required_with:subscales|numeric',
-        ]);
-
-        // Check unique code within this period
-        $exists = Criterion::where('assessment_period_id', $period->id)
-            ->where('code', $validated['code'])
-            ->exists();
-
-        if ($exists) {
-            return back()->withErrors(['code' => 'Kode kriteria sudah digunakan di periode ini.']);
-        }
-
-        $maxOrder = Criterion::where('assessment_period_id', $period->id)->max('sort_order') ?? 0;
-
-        $criterion = Criterion::create([
-            'assessment_period_id' => $period->id,
-            'code' => $validated['code'],
-            'name' => $validated['name'],
-            'attribute_type' => $validated['attribute_type'],
-            'input_type' => $validated['input_type'],
-            'description' => $validated['description'] ?? null,
-            'sort_order' => $maxOrder + 1,
-        ]);
-
-        // Create subscales if input is categorical
-        if (!empty($validated['subscales'])) {
-            foreach ($validated['subscales'] as $index => $subscale) {
-                CriterionSubscale::create([
-                    'criterion_id' => $criterion->id,
-                    'label' => $subscale['label'],
-                    'numeric_value' => $subscale['numeric_value'],
-                    'order_no' => $index + 1,
-                ]);
-            }
-        }
-
-        // Invalidate downstream calculations when modifying setup
-        if ($period->current_step > 1) {
-            $period->rewindToStep(1);
-        }
-
-        return back()->with('success', "Kriteria '{$criterion->name}' berhasil ditambahkan.");
+        return back()->with('error', 'Aplikasi ini menggunakan 5 kriteria inti tetap (C1-C5). Penambahan kriteria baru dinonaktifkan.');
     }
 
     /**
@@ -83,21 +34,21 @@ class SetupStepController extends Controller
             'subscales.*.numeric_value' => 'required_with:subscales|numeric',
         ]);
 
-        // Check unique code within this period (excluding self)
-        $exists = Criterion::where('assessment_period_id', $period->id)
-            ->where('code', $validated['code'])
-            ->where('id', '!=', $criterion->id)
-            ->exists();
+        $coreConfig = AssessmentPeriod::CORE_CRITERIA[$criterion->code] ?? null;
 
-        if ($exists) {
-            return back()->withErrors(['code' => 'Kode kriteria sudah digunakan di periode ini.']);
+        if ($coreConfig === null) {
+            return back()->with('error', 'Kriteria di luar template inti tidak didukung pada versi produksi ini.');
+        }
+
+        if ($validated['code'] !== $criterion->code) {
+            return back()->withErrors(['code' => 'Kode inti kriteria tidak dapat diubah.']);
         }
 
         $criterion->update([
-            'code' => $validated['code'],
+            'code' => $criterion->code,
             'name' => $validated['name'],
-            'attribute_type' => $validated['attribute_type'],
-            'input_type' => $validated['input_type'],
+            'attribute_type' => $coreConfig['attribute_type'],
+            'input_type' => $coreConfig['input_type'],
             'description' => $validated['description'] ?? null,
         ]);
 
@@ -152,16 +103,7 @@ class SetupStepController extends Controller
      */
     public function destroyCriteria(AssessmentPeriod $period, Criterion $criterion)
     {
-        $name = $criterion->name;
-        $criterion->subscales()->delete();
-        $criterion->delete();
-
-        // Invalidate downstream calculations when modifying setup
-        if ($period->current_step > 1) {
-            $period->rewindToStep(1);
-        }
-
-        return back()->with('success', "Kriteria '{$name}' berhasil dihapus.");
+        return back()->with('error', 'Kriteria inti C1-C5 tidak dapat dihapus dari sistem.');
     }
 
     /**
@@ -169,10 +111,14 @@ class SetupStepController extends Controller
      */
     public function complete(AssessmentPeriod $period)
     {
-        $criteriaCount = Criterion::where('assessment_period_id', $period->id)->count();
+        $criteria = Criterion::where('assessment_period_id', $period->id)->get();
+        $requiredCodes = collect(array_keys(AssessmentPeriod::CORE_CRITERIA));
+        $configuredCodes = $criteria->pluck('code');
+        $missingCodes = $requiredCodes->diff($configuredCodes);
+        $extraCodes = $configuredCodes->diff($requiredCodes);
 
-        if ($criteriaCount < 2) {
-            return back()->with('error', 'Minimal 2 kriteria diperlukan untuk melanjutkan.');
+        if ($criteria->count() !== $requiredCodes->count() || $missingCodes->isNotEmpty() || $extraCodes->isNotEmpty()) {
+            return back()->with('error', 'Konfigurasi kriteria harus tetap terdiri dari 5 kriteria inti C1 sampai C5.');
         }
 
         $period->markStepCompleted(1);

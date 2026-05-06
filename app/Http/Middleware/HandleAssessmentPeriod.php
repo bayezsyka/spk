@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\HttpFoundation\Response;
 
 class HandleAssessmentPeriod
@@ -15,12 +17,16 @@ class HandleAssessmentPeriod
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!\Illuminate\Support\Facades\Session::has('active_period_id')) {
-            $activePeriod = \App\Models\AssessmentPeriod::where('is_active', true)->first() 
+        if (!Schema::hasTable('assessment_periods')) {
+            return $next($request);
+        }
+
+        if (!Session::has('active_period_id')) {
+            $activePeriod = \App\Models\AssessmentPeriod::where('is_active', true)->first()
                 ?? \App\Models\AssessmentPeriod::latest()->first();
             
             if ($activePeriod) {
-                \Illuminate\Support\Facades\Session::put('active_period_id', $activePeriod->id);
+                Session::put('active_period_id', $activePeriod->id);
             }
         }
 

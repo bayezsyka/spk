@@ -7,6 +7,7 @@ use App\Models\AssessmentPeriod;
 use App\Models\CalculationRun;
 use App\Models\CalculationResult;
 use App\Services\Copeland\CopelandScoreService;
+use InvalidArgumentException;
 
 class CopelandStepController extends Controller
 {
@@ -27,10 +28,12 @@ class CopelandStepController extends Controller
 
         $edasScores = $edasRun->stage_payload['appraisal_scores'];
 
-        // Execute Copeland scoring with full pairwise output
-        $result = $copelandService->rankWithPairwise($edasScores);
+        try {
+            $result = $copelandService->rankWithPairwise($edasScores);
+        } catch (InvalidArgumentException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
 
-        // Create calculation run
         $run = CalculationRun::create([
             'assessment_period_id' => $period->id,
             'run_code' => 'CPL-' . $period->id . '-' . time(),
@@ -40,7 +43,6 @@ class CopelandStepController extends Controller
             'executed_at' => now(),
         ]);
 
-        // Store individual results
         foreach ($result['rankings'] as $ranking) {
             CalculationResult::create([
                 'calculation_run_id' => $run->id,
@@ -49,13 +51,15 @@ class CopelandStepController extends Controller
                 'copeland_score' => $ranking['copeland_score'],
                 'copeland_wins' => $ranking['wins'],
                 'copeland_losses' => $ranking['losses'],
+                'extra_payload' => [
+                    'ties' => $ranking['ties'],
+                ],
                 'final_rank' => $ranking['final_rank'],
             ]);
         }
 
-        // Advance pipeline to step 6 (completed)
         $period->markStepCompleted(5);
 
-        return back()->with('success', 'Copeland Score selesai dihitung. Hasil peringkat akhir tersedia.');
+        return back()->with('success', 'Pemeringkatan Copeland selesai dihitung. Hasil akhir sudah tersedia.');
     }
 }

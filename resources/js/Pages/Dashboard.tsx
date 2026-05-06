@@ -10,7 +10,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
         scoring: 'Input Nilai',
         bwm: 'Pembobotan BWM',
         edas: 'Kalkulasi EDAS',
-        copeland: 'Copeland Score',
+        copeland: 'Pemeringkatan Copeland',
         completed: 'Selesai',
     };
 
@@ -21,11 +21,9 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
             header={
                 <div>
                     <Breadcrumbs items={[]} />
-                    <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
-                        Dashboard Utama
-                    </h2>
+                    <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Dashboard Utama</h2>
                     <p className="text-slate-500 mt-1 text-sm">
-                        Ringkasan data dan kontrol cepat untuk sistem pendukung keputusan.
+                        Ringkasan data dan kontrol cepat untuk sistem pendukung keputusan penerimaan peserta LPKS.
                     </p>
                 </div>
             }
@@ -33,7 +31,6 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
             <Head title="Dashboard" />
 
             <div className="space-y-8">
-                {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/50 group hover:border-indigo-500 transition-all">
                         <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">
@@ -44,7 +41,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                         <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Total Peserta</h3>
                         <div className="mt-2 flex items-baseline gap-2">
                             <span className="text-4xl font-extrabold text-slate-900">{totalParticipants}</span>
-                            <span className="text-xs text-slate-400 font-medium">Kandidat</span>
+                            <span className="text-xs text-slate-400 font-medium">Peserta</span>
                         </div>
                         <Link href={route('participants.index')} className="mt-6 flex items-center gap-2 text-sm font-bold text-indigo-600 hover:gap-3 transition-all">
                             Kelola Peserta
@@ -63,7 +60,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                         <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Kriteria Aktif</h3>
                         <div className="mt-2 flex items-baseline gap-2">
                             <span className="text-4xl font-extrabold text-slate-900">{totalActiveCriteria}</span>
-                            <span className="text-xs text-slate-400 font-medium">Parameter</span>
+                            <span className="text-xs text-slate-400 font-medium">Kriteria</span>
                         </div>
                         <Link href={active_period ? route('pipeline.index', active_period.route_key) : route('periods.index')} className="mt-6 flex items-center gap-2 text-sm font-bold text-emerald-600 hover:gap-3 transition-all">
                             Konfigurasi Kriteria
@@ -73,12 +70,11 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                         </Link>
                     </div>
 
-                    {/* Pipeline Status Card */}
                     <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
                         <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest relative z-10">Periode Aktif</h3>
                         <div className="mt-3 relative z-10">
-                            <div className="text-xl font-bold text-slate-900 leading-tight">{active_period?.name || 'Tidak ada sesi aktif'}</div>
+                            <div className="text-xl font-bold text-slate-900 leading-tight">{active_period?.name || 'Tidak ada periode aktif'}</div>
                             {pipeline_state && (
                                 <div className="mt-3 space-y-2">
                                     <div className="flex items-center justify-between">
@@ -102,7 +98,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                                     href={route('pipeline.index', active_period.route_key)}
                                     className="block w-full text-center px-4 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
                                 >
-                                    Buka Pipeline Analisis
+                                    Buka Alur Penilaian
                                 </Link>
                             ) : (
                                 <Link
@@ -116,22 +112,21 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                     </div>
                 </div>
 
-                {/* Pipeline Flow Overview */}
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-8 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
                             <h3 className="text-xl font-bold text-slate-900">Alur Perhitungan SPK</h3>
-                            <p className="text-sm text-slate-500 mt-1">Pipeline linear untuk memastikan proses perhitungan berjalan berurutan.</p>
+                            <p className="text-sm text-slate-500 mt-1">Alur penilaian berurutan untuk memastikan proses perhitungan berjalan sistematis.</p>
                         </div>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest shrink-0">BWM → EDAS → COPELAND</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest shrink-0">BWM - EDAS - COPELAND</span>
                     </div>
                     <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                         {[
-                            { num: '01', title: 'Konfigurasi & BWM', desc: 'Setup kriteria, input peserta, dan hitung bobot prioritas dengan Best-Worst Method.', color: 'indigo' },
-                            { num: '02', title: 'Kalkulasi EDAS', desc: 'Evaluasi jarak rata-rata solusi untuk menghasilkan Appraisal Score setiap peserta.', color: 'blue' },
-                            { num: '03', title: 'Copeland & Ranking', desc: 'Perbandingan berpasangan dan penentuan peringkat final melalui net wins.', color: 'emerald' },
-                        ].map((step, i) => (
-                            <div key={i} className={`space-y-4 ${i > 0 ? 'sm:border-l sm:border-slate-100 sm:pl-8' : ''}`}>
+                            { num: '01', title: 'Konfigurasi & BWM', desc: 'Atur 5 kriteria inti, kelola peserta, lalu hitung bobot prioritas dengan Best-Worst Method.', color: 'indigo' },
+                            { num: '02', title: 'Kalkulasi EDAS', desc: 'Hitung solusi rata-rata, PDA, NDA, dan Appraisal Score untuk setiap peserta.', color: 'blue' },
+                            { num: '03', title: 'Copeland & Ranking', desc: 'Bandingkan skor EDAS secara berpasangan untuk menghasilkan peringkat akhir.', color: 'emerald' },
+                        ].map((step, index) => (
+                            <div key={index} className={`space-y-4 ${index > 0 ? 'sm:border-l sm:border-slate-100 sm:pl-8' : ''}`}>
                                 <div className="text-4xl font-black text-slate-100">{step.num}</div>
                                 <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider">{step.title}</h4>
                                 <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
@@ -140,7 +135,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                                         href={route('pipeline.index', active_period.route_key)}
                                         className={`inline-flex py-1.5 px-3 bg-${step.color}-50 text-${step.color}-700 rounded-lg text-[10px] font-bold hover:bg-${step.color}-100 transition-colors border border-${step.color}-100`}
                                     >
-                                        BUKA PIPELINE
+                                        BUKA ALUR
                                     </Link>
                                 )}
                             </div>

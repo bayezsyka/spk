@@ -95,7 +95,7 @@ export default function Edit({ participant }: any) {
                                     <InputError message={errors.pre_test_score} className="mt-2" />
                                 </div>
                                 <div>
-                                    <InputLabel htmlFor="report_score" value="Nilai Raport" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
+                                    <InputLabel htmlFor="report_score" value="Nilai Rapor" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
                                     <TextInput
                                         id="report_score"
                                         type="number"
@@ -122,6 +122,7 @@ export default function Edit({ participant }: any) {
                                     <option value="Sangat Komunikatif">Sangat Komunikatif</option>
                                     <option value="Komunikatif">Komunikatif</option>
                                     <option value="Cukup Komunikatif">Cukup Komunikatif</option>
+                                    <option value="Kurang Komunikatif">Kurang Komunikatif</option>
                                     <option value="Kurang Motivasi">Kurang Motivasi</option>
                                 </select>
                                 <InputError message={errors.interview_grade} className="mt-2" />
@@ -129,7 +130,7 @@ export default function Edit({ participant }: any) {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <InputLabel htmlFor="domicile_distance_km" value="Domisili (km)" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
+                                    <InputLabel htmlFor="domicile_distance_km" value="Jarak Domisili (km)" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
                                     <TextInput
                                         id="domicile_distance_km"
                                         type="number"
@@ -164,7 +165,7 @@ export default function Edit({ participant }: any) {
 
                     <div className="mt-12 pt-8 border-t border-slate-100 flex items-center justify-between">
                         <Link href={route('participants.index')} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest">
-                            ← Kembali ke Daftar
+                            Kembali ke Daftar
                         </Link>
                         <PrimaryButton className="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-black shadow-xl shadow-indigo-100" disabled={processing}>
                             {processing ? 'Menyimpan...' : 'Simpan Perubahan'}

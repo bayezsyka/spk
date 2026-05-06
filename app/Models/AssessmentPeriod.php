@@ -9,6 +9,67 @@ class AssessmentPeriod extends Model
 {
     use HasUlid;
 
+    public const CORE_CRITERIA = [
+        'C1' => [
+            'code' => 'C1',
+            'name' => 'Nilai Pre-Test',
+            'description' => 'Nilai hasil ujian tertulis atau kompetensi dasar.',
+            'attribute_type' => 'benefit',
+            'input_type' => 'numeric',
+            'sort_order' => 1,
+            'is_active' => true,
+        ],
+        'C2' => [
+            'code' => 'C2',
+            'name' => 'Wawancara',
+            'description' => 'Evaluasi komunikasi, motivasi, dan kesiapan peserta saat wawancara.',
+            'attribute_type' => 'benefit',
+            'input_type' => 'categorical',
+            'sort_order' => 2,
+            'is_active' => true,
+            'subscales' => [
+                ['label' => 'Kurang Motivasi', 'numeric_value' => 1, 'order_no' => 1],
+                ['label' => 'Kurang Komunikatif', 'numeric_value' => 2, 'order_no' => 2],
+                ['label' => 'Cukup Komunikatif', 'numeric_value' => 3, 'order_no' => 3],
+                ['label' => 'Komunikatif', 'numeric_value' => 4, 'order_no' => 4],
+                ['label' => 'Sangat Komunikatif', 'numeric_value' => 5, 'order_no' => 5],
+            ],
+        ],
+        'C3' => [
+            'code' => 'C3',
+            'name' => 'Nilai Rapor',
+            'description' => 'Rata-rata nilai akademik dari pendidikan terakhir.',
+            'attribute_type' => 'benefit',
+            'input_type' => 'numeric',
+            'sort_order' => 3,
+            'is_active' => true,
+        ],
+        'C4' => [
+            'code' => 'C4',
+            'name' => 'Jarak Domisili',
+            'description' => 'Estimasi jarak tempuh ke lokasi kerja dalam kilometer.',
+            'attribute_type' => 'cost',
+            'input_type' => 'numeric',
+            'sort_order' => 4,
+            'is_active' => true,
+        ],
+        'C5' => [
+            'code' => 'C5',
+            'name' => 'Kesiapan Kerja',
+            'description' => 'Tingkat kesiapan peserta untuk mulai bekerja.',
+            'attribute_type' => 'benefit',
+            'input_type' => 'categorical',
+            'sort_order' => 5,
+            'is_active' => true,
+            'subscales' => [
+                ['label' => 'Kurang Siap', 'numeric_value' => 1, 'order_no' => 1],
+                ['label' => 'Cukup Siap', 'numeric_value' => 2, 'order_no' => 2],
+                ['label' => 'Siap', 'numeric_value' => 3, 'order_no' => 3],
+                ['label' => 'Sangat Siap', 'numeric_value' => 4, 'order_no' => 4],
+            ],
+        ],
+    ];
+
     protected $guarded = [];
 
     protected $casts = [
@@ -83,7 +144,7 @@ class AssessmentPeriod extends Model
             'scoring'   => 'Input Nilai',
             'bwm'       => 'Pembobotan BWM',
             'edas'      => 'Kalkulasi EDAS',
-            'copeland'  => 'Copeland Score',
+            'copeland'  => 'Pemeringkatan Copeland',
             'completed' => 'Selesai',
             default     => 'Tidak Diketahui',
         };
@@ -212,68 +273,7 @@ class AssessmentPeriod extends Model
      */
     public function createDefaultCriteria(): void
     {
-        $defaultCriteria = [
-            [
-                'code' => 'C1',
-                'name' => 'Nilai Pre-Test',
-                'description' => 'Nilai hasil ujian tertulis/kompetensi dasar.',
-                'attribute_type' => 'benefit',
-                'input_type' => 'numeric',
-                'sort_order' => 1,
-                'is_active' => true,
-            ],
-            [
-                'code' => 'C2',
-                'name' => 'Hasil Wawancara',
-                'description' => 'Evaluasi kemampuan komunikasi dan motivasi.',
-                'attribute_type' => 'benefit',
-                'input_type' => 'categorical',
-                'sort_order' => 2,
-                'is_active' => true,
-                'subscales' => [
-                    ['label' => 'Kurang Motivasi', 'numeric_value' => 1, 'order_no' => 1],
-                    ['label' => 'Kurang Komunikatif', 'numeric_value' => 2, 'order_no' => 2],
-                    ['label' => 'Cukup Komunikatif', 'numeric_value' => 3, 'order_no' => 3],
-                    ['label' => 'Komunikatif', 'numeric_value' => 4, 'order_no' => 4],
-                    ['label' => 'Sangat Komunikatif', 'numeric_value' => 5, 'order_no' => 5],
-                ]
-            ],
-            [
-                'code' => 'C3',
-                'name' => 'Nilai Raport',
-                'description' => 'Rata-rata nilai akademik dari pendidikan terakhir.',
-                'attribute_type' => 'benefit',
-                'input_type' => 'numeric',
-                'sort_order' => 3,
-                'is_active' => true,
-            ],
-            [
-                'code' => 'C4',
-                'name' => 'Jarak Domisili',
-                'description' => 'Estimasi jarak tempuh ke lokasi kerja (dalam KM).',
-                'attribute_type' => 'cost',
-                'input_type' => 'numeric',
-                'sort_order' => 4,
-                'is_active' => true,
-            ],
-            [
-                'code' => 'C5',
-                'name' => 'Kesiapan Kerja',
-                'description' => 'Tingkat kesiapan untuk ditempatkan segera.',
-                'attribute_type' => 'benefit',
-                'input_type' => 'categorical',
-                'sort_order' => 5,
-                'is_active' => true,
-                'subscales' => [
-                    ['label' => 'Kurang Siap', 'numeric_value' => 1, 'order_no' => 1],
-                    ['label' => 'Cukup Siap', 'numeric_value' => 2, 'order_no' => 2],
-                    ['label' => 'Siap', 'numeric_value' => 3, 'order_no' => 3],
-                    ['label' => 'Sangat Siap', 'numeric_value' => 4, 'order_no' => 4],
-                ]
-            ],
-        ];
-
-        foreach ($defaultCriteria as $data) {
+        foreach (self::CORE_CRITERIA as $data) {
             $subscales = $data['subscales'] ?? null;
             unset($data['subscales']);
             

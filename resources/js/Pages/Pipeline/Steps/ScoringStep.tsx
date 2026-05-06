@@ -1,5 +1,6 @@
 import { router, Link } from '@inertiajs/react';
 import EmptyState from '@/Components/UI/EmptyState';
+import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
 
 interface Props {
     period: any;
@@ -28,27 +29,56 @@ export default function ScoringStep({ period, stepData, pipelineState, onNavigat
 
     return (
         <div className="space-y-5">
+            <PipelineActionBar
+                title="Input Peserta & Nilai"
+                subtitle="Langkah 2: Kelola data peserta dan pastikan semua skor terisi"
+                onBack={() => onNavigateStep(0)}
+                actions={
+                    <div className="flex items-center gap-2">
+                         <button
+                            onClick={handleAutoPopulate}
+                            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-violet-50 text-violet-700 text-xs font-bold rounded-lg hover:bg-violet-100 transition-all border border-violet-100"
+                        >
+                            Sinkron Skor
+                        </button>
+                        {allScored && !isCompleted && (
+                            <button
+                                onClick={handleComplete}
+                                className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                            >
+                                <span>Lanjut ke BWM</span>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </button>
+                        )}
+                        {isCompleted && (
+                            <button
+                                onClick={() => onNavigateStep(2)}
+                                className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                            >
+                                <span>Lanjut</span>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                }
+            />
+
             {/* Header */}
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h3 className="text-lg font-semibold text-slate-900">
-                            Input Peserta & Nilai
+                            Manajemen Peserta
                         </h3>
                         <p className="text-slate-500 text-sm mt-1">
-                            Kelola data peserta dan pastikan semua skor terisi sebelum melanjutkan.
+                            Kelola data peserta dan nilai kriteria untuk periode ini.
                         </p>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                        <button
-                            onClick={handleAutoPopulate}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Sinkron Skor
-                        </button>
                         <Link
                             href={route('participants.index')}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-700 text-sm font-medium rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors"
@@ -56,7 +86,7 @@ export default function ScoringStep({ period, stepData, pipelineState, onNavigat
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            Kelola Peserta
+                            Kelola Semua Peserta
                         </Link>
                     </div>
                 </div>
@@ -145,48 +175,8 @@ export default function ScoringStep({ period, stepData, pipelineState, onNavigat
                 </div>
             </div>
 
-            {/* Navigation */}
-            <div className="flex items-center justify-between">
-                <button
-                    onClick={() => onNavigateStep(0)}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                    </svg>
-                    Kembali
-                </button>
-
-                {allScored && !isCompleted && (
-                    <button
-                        onClick={handleComplete}
-                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors text-sm"
-                    >
-                        Lanjut ke Pembobotan BWM
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </button>
-                )}
-                {isCompleted && (
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 text-sm text-emerald-700">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="font-medium">Skor lengkap</span>
-                        </div>
-                        <button
-                            onClick={() => onNavigateStep(2)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                        >
-                            Lanjut
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </button>
-                    </div>
-                )}
+            <div className="flex items-center justify-center p-4">
+                 <div className="text-xs text-slate-400 italic">Gunakan bar navigasi di bagian atas untuk melanjutkan ke tahap berikutnya.</div>
             </div>
         </div>
     );

@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import ProcessButton from '@/Components/Pipeline/ProcessButton';
+import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
 
 interface Props {
     period: any;
@@ -9,7 +10,7 @@ interface Props {
     onNavigateStep: (step: number) => void;
 }
 
-export default function CopelandStep({ period, stepData, pipelineState, completedRuns, onNavigateStep }: Props) {
+export default function CopelandStep({ period, stepData, onNavigateStep }: Props) {
     const copelandPayload = stepData.copeland?.runPayload;
     const hasResult = !!copelandPayload;
 
@@ -23,26 +24,66 @@ export default function CopelandStep({ period, stepData, pipelineState, complete
     const participantLabels = copelandPayload?.participant_labels || {};
     const participantIds = Object.keys(participantLabels).map(Number);
 
-    const getCellColor = (val: number) => {
-        if (val === 1) return 'bg-emerald-50 text-emerald-700 font-medium';
-        if (val === -1) return 'bg-rose-50 text-rose-700 font-medium';
+    const getCellColor = (value: number) => {
+        if (value === 1) {
+            return 'bg-emerald-50 text-emerald-700 font-medium';
+        }
+
+        if (value === -1) {
+            return 'bg-rose-50 text-rose-700 font-medium';
+        }
+
         return 'bg-slate-50 text-slate-400';
     };
 
-    const getCellLabel = (val: number) => {
-        if (val === 1) return 'W';
-        if (val === -1) return 'L';
-        return '—';
+    const getCellLabel = (value: number) => {
+        if (value === 1) {
+            return 'M';
+        }
+
+        if (value === -1) {
+            return 'K';
+        }
+
+        return 'I';
     };
 
     return (
         <div className="space-y-5">
-            {/* Header */}
+            <PipelineActionBar
+                title="Pemeringkatan Copeland"
+                subtitle="Langkah 4: Perbandingan berpasangan dan skor akhir Copeland"
+                onBack={() => onNavigateStep(3)}
+                actions={
+                    !hasResult ? (
+                        <ProcessButton
+                            processing={processing}
+                            onClick={handleProcess}
+                            label="Jalankan Copeland"
+                            loadingLabel="Menghitung..."
+                            variant="success"
+                        />
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded hidden sm:inline">COPELAND SELESAI</span>
+                            <button
+                                onClick={() => onNavigateStep(5)}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                            >
+                                <span>Lihat Hasil Akhir</span>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </button>
+                        </div>
+                    )
+                }
+            />
+
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Copeland Score</h3>
-                <p className="text-slate-500 text-sm mt-1 max-w-xl">
-                    Metode Copeland membandingkan semua pasangan peserta secara head-to-head berdasarkan skor EDAS.
-                    Peringkat final ditentukan dari selisih jumlah menang dan kalah (Net Wins).
+                <h3 className="text-lg font-semibold text-slate-900">Deskripsi Metode</h3>
+                <p className="text-slate-500 text-sm mt-1 max-w-2xl">
+                    Metode Copeland Score membandingkan setiap peserta secara berpasangan (*pairwise*) untuk menghitung jumlah kemenangan dan kekalahan.
                 </p>
             </div>
 
@@ -56,40 +97,21 @@ export default function CopelandStep({ period, stepData, pipelineState, complete
                     <div>
                         <h4 className="text-base font-medium text-slate-900">Siap Menghitung Copeland</h4>
                         <p className="text-sm text-slate-500 mt-1.5 max-w-md mx-auto">
-                            Perbandingan berpasangan dari Appraisal Score EDAS akan dijalankan.
+                            Sistem akan membandingkan skor EDAS antar peserta, lalu menghitung Menang, Kalah, Imbang, dan ranking akhir.
                         </p>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 pt-2">
-                        <button
-                            onClick={() => onNavigateStep(3)}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                            </svg>
-                            Kembali
-                        </button>
-                        <ProcessButton
-                            processing={processing}
-                            onClick={handleProcess}
-                            label="Jalankan Copeland"
-                            loadingLabel="Menghitung..."
-                            variant="success"
-                        />
                     </div>
                 </div>
             )}
 
             {hasResult && (
                 <div className="space-y-5">
-                    {/* Pairwise Matrix */}
                     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
                             <h4 className="font-medium text-slate-900 text-sm">Matriks Perbandingan Berpasangan</h4>
                             <div className="flex items-center gap-3 text-xs text-slate-500">
-                                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-200" /> Win</span>
-                                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rose-100 border border-rose-200" /> Loss</span>
-                                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-50 border border-slate-200" /> Tie</span>
+                                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-200" /> Menang</span>
+                                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-rose-100 border border-rose-200" /> Kalah</span>
+                                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-50 border border-slate-200" /> Imbang</span>
                             </div>
                         </div>
                         <div className="overflow-x-auto">
@@ -112,13 +134,13 @@ export default function CopelandStep({ period, stepData, pipelineState, complete
                                             <td className="py-2 px-3 font-medium text-slate-700 whitespace-nowrap sticky left-0 bg-white z-10 border-r border-slate-100">
                                                 {row.participant_name}
                                             </td>
-                                            {participantIds.map((colId: number) => {
-                                                const val = row.comparisons[colId] ?? 0;
-                                                const isSelf = row.participant_id === colId;
+                                            {participantIds.map((columnId: number) => {
+                                                const value = row.comparisons[columnId] ?? 0;
+                                                const isSelf = row.participant_id === columnId;
                                                 return (
-                                                    <td key={colId} className={`py-2 px-2 text-center ${isSelf ? 'bg-slate-100' : ''}`}>
-                                                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded text-xs ${isSelf ? 'text-slate-300' : getCellColor(val)}`}>
-                                                            {isSelf ? '—' : getCellLabel(val)}
+                                                    <td key={columnId} className={`py-2 px-2 text-center ${isSelf ? 'bg-slate-100' : ''}`}>
+                                                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded text-xs ${isSelf ? 'text-slate-300' : getCellColor(value)}`}>
+                                                            {isSelf ? '-' : getCellLabel(value)}
                                                         </span>
                                                     </td>
                                                 );
@@ -130,42 +152,34 @@ export default function CopelandStep({ period, stepData, pipelineState, complete
                         </div>
                     </div>
 
-                    {/* Copeland Score Summary */}
                     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                         <div className="px-5 py-3 border-b border-slate-100">
-                            <h4 className="font-medium text-slate-900 text-sm">Rangkuman Copeland Score</h4>
+                            <h4 className="font-medium text-slate-900 text-sm">Ringkasan Copeland</h4>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-slate-50">
                                     <tr>
-                                        <th className="py-2.5 px-4 text-center text-xs font-medium text-slate-500 w-16">Rank</th>
+                                        <th className="py-2.5 px-4 text-center text-xs font-medium text-slate-500 w-16">Peringkat</th>
                                         <th className="py-2.5 px-4 text-left text-xs font-medium text-slate-500">Peserta</th>
-                                        <th className="py-2.5 px-4 text-center text-xs font-medium text-slate-500">Win</th>
-                                        <th className="py-2.5 px-4 text-center text-xs font-medium text-slate-500">Loss</th>
-                                        <th className="py-2.5 px-4 text-right text-xs font-medium text-slate-500">Net</th>
+                                        <th className="py-2.5 px-4 text-center text-xs font-medium text-slate-500">Menang</th>
+                                        <th className="py-2.5 px-4 text-center text-xs font-medium text-slate-500">Kalah</th>
+                                        <th className="py-2.5 px-4 text-center text-xs font-medium text-slate-500">Imbang</th>
+                                        <th className="py-2.5 px-4 text-right text-xs font-medium text-slate-500">Skor EDAS</th>
+                                        <th className="py-2.5 px-4 text-right text-xs font-medium text-slate-500">Skor Copeland</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
-                                    {(copelandPayload.rankings || []).map((r: any) => (
-                                        <tr key={r.participant_id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="py-3 px-4 text-center">
-                                                <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-medium ${
-                                                    r.final_rank === 1 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                                                    r.final_rank === 2 ? 'bg-slate-100 text-slate-600 border border-slate-200' :
-                                                    r.final_rank === 3 ? 'bg-orange-50 text-orange-600 border border-orange-200' :
-                                                    'bg-white text-slate-400 border border-slate-200'
-                                                }`}>
-                                                    {r.final_rank}
-                                                </span>
-                                            </td>
-                                            <td className="py-3 px-4 font-medium text-slate-700">{r.participant_name}</td>
-                                            <td className="py-3 px-4 text-center font-medium text-emerald-600">{r.wins}</td>
-                                            <td className="py-3 px-4 text-center font-medium text-rose-500">{r.losses}</td>
-                                            <td className="py-3 px-4 text-right">
-                                                <span className={`font-semibold ${r.copeland_score > 0 ? 'text-indigo-600' : r.copeland_score < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
-                                                    {r.copeland_score > 0 ? '+' : ''}{r.copeland_score}
-                                                </span>
+                                    {(copelandPayload.rankings || []).map((ranking: any) => (
+                                        <tr key={ranking.participant_id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="py-3 px-4 text-center font-semibold text-slate-700">{ranking.final_rank}</td>
+                                            <td className="py-3 px-4 font-medium text-slate-700">{ranking.participant_name}</td>
+                                            <td className="py-3 px-4 text-center font-medium text-emerald-600">{ranking.wins}</td>
+                                            <td className="py-3 px-4 text-center font-medium text-rose-500">{ranking.losses}</td>
+                                            <td className="py-3 px-4 text-center font-medium text-slate-500">{ranking.ties}</td>
+                                            <td className="py-3 px-4 text-right font-mono text-xs text-slate-500">{Number(ranking.edas_score).toFixed(6)}</td>
+                                            <td className="py-3 px-4 text-right font-semibold text-indigo-600">
+                                                {ranking.copeland_score > 0 ? '+' : ''}{ranking.copeland_score}
                                             </td>
                                         </tr>
                                     ))}
@@ -174,26 +188,8 @@ export default function CopelandStep({ period, stepData, pipelineState, complete
                         </div>
                     </div>
 
-                    {/* Navigate */}
-                    <div className="flex items-center justify-between">
-                        <button
-                            onClick={() => onNavigateStep(3)}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                            </svg>
-                            Kembali
-                        </button>
-                        <button
-                            onClick={() => onNavigateStep(5)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                        >
-                            Lihat Hasil Akhir
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </button>
+                    <div className="flex items-center justify-center p-4">
+                         <p className="text-xs text-slate-400 italic">Hasil kalkulasi Copeland ditampilkan di atas. Gunakan navigasi di bagian atas untuk lanjut.</p>
                     </div>
                 </div>
             )}

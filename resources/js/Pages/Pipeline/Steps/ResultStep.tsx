@@ -1,4 +1,5 @@
 import RankBadge from '@/Components/Pipeline/RankBadge';
+import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
 
 interface Props {
     period: any;
@@ -9,7 +10,7 @@ interface Props {
     onNavigateStep: (step: number) => void;
 }
 
-export default function ResultStep({ period, stepData, pipelineState, completedRuns, finalResults, onNavigateStep }: Props) {
+export default function ResultStep({ period, completedRuns, finalResults, onNavigateStep }: Props) {
     const results = finalResults || [];
     const copelandRun = completedRuns?.copeland;
 
@@ -22,56 +23,66 @@ export default function ResultStep({ period, stepData, pipelineState, completedR
                     </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-1">Belum Ada Hasil</h3>
-                <p className="text-sm text-slate-500">Selesaikan semua tahap perhitungan untuk menampilkan peringkat akhir.</p>
+                <p className="text-sm text-slate-500">Selesaikan seluruh tahapan perhitungan untuk menampilkan peringkat akhir.</p>
             </div>
         );
     }
 
     return (
         <div className="space-y-5">
-            {/* Header */}
+            <PipelineActionBar
+                title="Hasil Akhir Penilaian"
+                subtitle={`Langkah 5: Hasil integrasi BWM, EDAS, dan Copeland untuk periode ${period.name}`}
+                onBack={() => onNavigateStep(4)}
+                actions={
+                    <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                        </svg>
+                        PENILAIAN SELESAI
+                    </span>
+                }
+            />
+
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
                 <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Hasil Peringkat Akhir</h3>
-                    <p className="text-slate-500 text-sm mt-1">
-                        Integrasi BWM + EDAS + Copeland untuk periode <span className="font-medium text-indigo-600">{period.name}</span>
-                    </p>
+                    <h3 className="text-lg font-semibold text-slate-900">Ringkasan Eksekusi</h3>
                     {copelandRun && (
-                        <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-400">
+                        <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-400">
                             <span className="bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
-                                Kode: {copelandRun.run_code}
+                                Kode Run: {copelandRun.run_code}
                             </span>
                             <span className="bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
-                                {new Date(copelandRun.executed_at).toLocaleString('id-ID')}
+                                Dieksekusi: {new Date(copelandRun.executed_at).toLocaleString('id-ID')}
                             </span>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Top 3 Spotlight */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {results.slice(0, 3).map((r: any, idx: number) => {
-                    const bgStyles = [
+                {results.slice(0, 3).map((result: any, index: number) => {
+                    const styles = [
                         'bg-indigo-600 text-white border-indigo-700',
                         'bg-white text-slate-900 border-slate-200',
                         'bg-white text-slate-900 border-slate-200',
                     ];
+
                     return (
-                        <div key={r.id} className={`relative overflow-hidden rounded-xl p-6 border shadow-sm ${bgStyles[idx]}`}>
+                        <div key={result.id} className={`relative overflow-hidden rounded-xl p-6 border shadow-sm ${styles[index]}`}>
                             <div className="absolute top-0 right-0 font-semibold opacity-5 text-7xl -mr-3 -mt-3 select-none">
-                                #{idx + 1}
+                                #{index + 1}
                             </div>
                             <div className="relative z-10">
-                                <RankBadge rank={idx + 1} size="lg" />
-                                <div className={`text-[10px] font-medium uppercase tracking-wider mt-3 ${idx === 0 ? 'text-indigo-200' : 'text-slate-400'}`}>
-                                    Peringkat Ke-{idx + 1}
+                                <RankBadge rank={index + 1} size="lg" />
+                                <div className={`text-[10px] font-medium uppercase tracking-wider mt-3 ${index === 0 ? 'text-indigo-200' : 'text-slate-400'}`}>
+                                    Peringkat {index + 1}
                                 </div>
-                                <h4 className="text-lg font-semibold mt-1 truncate">{r.participant?.full_name}</h4>
-                                <div className={`text-xs mt-2 ${idx === 0 ? 'text-indigo-200' : 'text-slate-500'}`}>
-                                    EDAS: <span className="font-mono">{r.edas_score != null ? Number(r.edas_score).toFixed(4) : '-'}</span>
-                                    <span className="mx-1.5">·</span>
-                                    Copeland: <span className="font-mono font-semibold">{r.copeland_score > 0 ? '+' : ''}{r.copeland_score}</span>
+                                <h4 className="text-lg font-semibold mt-1 truncate">{result.participant?.full_name}</h4>
+                                <div className={`text-xs mt-2 ${index === 0 ? 'text-indigo-200' : 'text-slate-500'}`}>
+                                    EDAS: <span className="font-mono">{result.edas_score != null ? Number(result.edas_score).toFixed(4) : '-'}</span>
+                                    <span className="mx-1.5">|</span>
+                                    Copeland: <span className="font-mono font-semibold">{result.copeland_score > 0 ? '+' : ''}{result.copeland_score}</span>
                                 </div>
                             </div>
                         </div>
@@ -79,44 +90,45 @@ export default function ResultStep({ period, stepData, pipelineState, completedR
                 })}
             </div>
 
-            {/* Full Ranking Table */}
             <div className="bg-white overflow-hidden border border-slate-200 rounded-xl shadow-sm">
                 <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
                     <h4 className="font-medium text-slate-900 text-sm">Tabel Peringkat Lengkap</h4>
-                    <span className="text-xs text-slate-400">{results.length} Peserta</span>
+                    <span className="text-xs text-slate-400">{results.length} peserta</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th className="py-3 px-5 text-center text-xs font-medium text-slate-500 w-20">Rank</th>
+                                <th className="py-3 px-5 text-center text-xs font-medium text-slate-500 w-20">Peringkat</th>
                                 <th className="py-3 px-5 text-xs font-medium text-slate-500">Peserta</th>
-                                <th className="py-3 px-5 text-right text-xs font-medium text-slate-500">EDAS Score</th>
-                                <th className="py-3 px-5 text-center text-xs font-medium text-slate-500">W/L</th>
-                                <th className="py-3 px-5 text-right text-xs font-medium text-slate-500">Copeland</th>
+                                <th className="py-3 px-5 text-right text-xs font-medium text-slate-500">Skor EDAS</th>
+                                <th className="py-3 px-5 text-center text-xs font-medium text-slate-500">M / K / I</th>
+                                <th className="py-3 px-5 text-right text-xs font-medium text-slate-500">Skor Copeland</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {results.map((r: any) => (
-                                <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
+                            {results.map((result: any) => (
+                                <tr key={result.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="py-3.5 px-5 text-center">
-                                        <RankBadge rank={r.final_rank} size="sm" />
+                                        <RankBadge rank={result.final_rank} size="sm" />
                                     </td>
-                                    <td className="py-3.5 px-5 font-medium text-slate-900 text-sm">{r.participant?.full_name}</td>
+                                    <td className="py-3.5 px-5 font-medium text-slate-900 text-sm">{result.participant?.full_name}</td>
                                     <td className="py-3.5 px-5 text-right font-mono text-xs text-slate-500">
-                                        {r.edas_score != null ? Number(r.edas_score).toFixed(6) : '-'}
+                                        {result.edas_score != null ? Number(result.edas_score).toFixed(6) : '-'}
                                     </td>
                                     <td className="py-3.5 px-5 text-center text-xs">
-                                        <span className="text-emerald-600 font-medium">{r.copeland_wins ?? '-'}</span>
+                                        <span className="text-emerald-600 font-medium">{result.copeland_wins ?? '-'}</span>
                                         <span className="text-slate-300 mx-1">/</span>
-                                        <span className="text-rose-500 font-medium">{r.copeland_losses ?? '-'}</span>
+                                        <span className="text-rose-500 font-medium">{result.copeland_losses ?? '-'}</span>
+                                        <span className="text-slate-300 mx-1">/</span>
+                                        <span className="text-slate-500 font-medium">{result.extra_payload?.ties ?? '-'}</span>
                                     </td>
                                     <td className="py-3.5 px-5 text-right">
                                         <span className={`font-semibold ${
-                                            r.copeland_score > 0 ? 'text-indigo-600' :
-                                            r.copeland_score < 0 ? 'text-rose-500' : 'text-slate-400'
+                                            result.copeland_score > 0 ? 'text-indigo-600' :
+                                            result.copeland_score < 0 ? 'text-rose-500' : 'text-slate-400'
                                         }`}>
-                                            {r.copeland_score > 0 ? '+' : ''}{r.copeland_score}
+                                            {result.copeland_score > 0 ? '+' : ''}{result.copeland_score}
                                         </span>
                                     </td>
                                 </tr>
@@ -126,8 +138,7 @@ export default function ResultStep({ period, stepData, pipelineState, completedR
                 </div>
             </div>
 
-            {/* Completion Banner */}
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex items-center justify-between">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex items-center justify-center">
                 <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-emerald-500 text-white rounded-lg flex items-center justify-center">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -135,19 +146,10 @@ export default function ResultStep({ period, stepData, pipelineState, completedR
                         </svg>
                     </div>
                     <div>
-                        <p className="font-medium text-emerald-800 text-sm">Pipeline Analisis Selesai</p>
+                        <p className="font-medium text-emerald-800 text-sm">Alur Penilaian Selesai</p>
                         <p className="text-emerald-600 text-xs mt-0.5">Seluruh tahap untuk "{period.name}" berhasil diselesaikan.</p>
                     </div>
                 </div>
-                <button
-                    onClick={() => onNavigateStep(4)}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                    </svg>
-                    Kembali
-                </button>
             </div>
         </div>
     );

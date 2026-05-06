@@ -53,14 +53,24 @@ class PipelineStateService
      */
     private function validateSetup(AssessmentPeriod $period): array
     {
-        $criteriaCount = Criterion::where('assessment_period_id', $period->id)->count();
+        $criteria = Criterion::where('assessment_period_id', $period->id)->get();
+        $requiredCodes = collect(array_keys(AssessmentPeriod::CORE_CRITERIA));
+        $configuredCodes = $criteria->pluck('code');
+        $missingCodes = $requiredCodes->diff($configuredCodes);
+        $extraCodes = $configuredCodes->diff($requiredCodes);
+        $criteriaCount = $criteria->count();
+        $valid = $criteriaCount === $requiredCodes->count() && $missingCodes->isEmpty() && $extraCodes->isEmpty();
 
         return [
-            'valid' => $criteriaCount >= 2,
-            'message' => $criteriaCount >= 2
-                ? "{$criteriaCount} kriteria terkonfigurasi"
-                : "Minimal 2 kriteria diperlukan (saat ini: {$criteriaCount})",
-            'data' => ['criteria_count' => $criteriaCount],
+            'valid' => $valid,
+            'message' => $valid
+                ? "{$criteriaCount} kriteria inti terkonfigurasi"
+                : 'Kriteria wajib tetap terdiri dari C1 sampai C5.',
+            'data' => [
+                'criteria_count' => $criteriaCount,
+                'missing_codes' => $missingCodes->values()->all(),
+                'extra_codes' => $extraCodes->values()->all(),
+            ],
         ];
     }
 
@@ -146,7 +156,7 @@ class PipelineStateService
         return [
             'valid' => (bool) $run,
             'message' => $run
-                ? 'Copeland Score dihitung'
+                ? 'Pemeringkatan Copeland selesai dihitung'
                 : 'Copeland belum diproses',
             'data' => ['run' => $run],
         ];

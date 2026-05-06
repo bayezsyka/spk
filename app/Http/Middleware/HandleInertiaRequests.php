@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -29,7 +30,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $activePeriod = \App\Models\AssessmentPeriod::find(session('active_period_id'));
+        $hasAssessmentPeriodTable = Schema::hasTable('assessment_periods');
+        $activePeriod = $hasAssessmentPeriodTable
+            ? \App\Models\AssessmentPeriod::find(session('active_period_id'))
+            : null;
 
         return [
             ...parent::share($request),
@@ -40,10 +44,11 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
-            'assessment_periods' => \App\Models\AssessmentPeriod::latest()->get(),
+            'assessment_periods' => $hasAssessmentPeriodTable
+                ? \App\Models\AssessmentPeriod::latest()->get()
+                : collect(),
             'active_period_id' => session('active_period_id'),
             'active_period' => $activePeriod,
-            // Pipeline context for dynamic navigation
             'pipeline_state' => $activePeriod ? [
                 'current_step' => $activePeriod->current_step,
                 'status' => $activePeriod->pipeline_status,

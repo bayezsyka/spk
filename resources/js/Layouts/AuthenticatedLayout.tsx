@@ -30,7 +30,7 @@ export default function Authenticated({
                                     <div className="p-2 bg-indigo-600 rounded-lg group-hover:bg-indigo-700 transition-colors">
                                         <ApplicationLogo className="block h-5 w-auto fill-current text-white" />
                                     </div>
-                                    <span className="font-bold text-slate-900 tracking-tight hidden sm:block uppercase">SmartSPK</span>
+                                    <span className="font-bold text-slate-900 tracking-tight hidden sm:block uppercase">SPK LPKS</span>
                                 </Link>
                             </div>
 
@@ -52,7 +52,7 @@ export default function Authenticated({
                                         href={route('pipeline.index', active_period.route_key)}
                                         active={route().current('pipeline.*')}
                                     >
-                                        Pipeline
+                                        Alur Penilaian
                                     </NavLink>
                                 )}
                                 <NavLink
@@ -141,14 +141,14 @@ export default function Authenticated({
                                         <Dropdown.Link
                                             href={route('profile.edit')}
                                         >
-                                            Profile
+                                            Profil
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
                                             as="button"
                                         >
-                                            Log Out
+                                            Keluar
                                         </Dropdown.Link>
                                     </Dropdown.Content>
                                 </Dropdown>
@@ -222,7 +222,7 @@ export default function Authenticated({
                                 href={route('pipeline.index', active_period.route_key)}
                                 active={route().current('pipeline.*')}
                             >
-                                Pipeline Analisis
+                                Alur Penilaian
                             </ResponsiveNavLink>
                         )}
                         <ResponsiveNavLink
@@ -246,7 +246,7 @@ export default function Authenticated({
 
                         <div className="mt-3 space-y-1">
                             <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile Settings
+                                Pengaturan Profil
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
@@ -254,7 +254,7 @@ export default function Authenticated({
                                 as="button"
                                 className="text-red-600"
                             >
-                                Log Out
+                                Keluar
                             </ResponsiveNavLink>
                         </div>
                     </div>

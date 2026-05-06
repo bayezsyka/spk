@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Participant;
 use App\Models\ParticipantScore;
 use App\Models\Criterion;
+use App\Services\Participants\ParticipantScoreSyncService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -33,7 +34,7 @@ class ParticipantController extends Controller
         return Inertia::render('Participants/Create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ParticipantScoreSyncService $scoreSyncService)
     {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
@@ -48,14 +49,7 @@ class ParticipantController extends Controller
         $validated['assessment_period_id'] = session('active_period_id');
 
         $participant = Participant::create($validated);
-
-        // Sync empty scores for all criteria in ACTIVE PERIOD
-        foreach (Criterion::forActivePeriod()->get() as $criterion) {
-            ParticipantScore::create([
-                'participant_id' => $participant->id,
-                'criterion_id' => $criterion->id,
-            ]);
-        }
+        $scoreSyncService->syncParticipant($participant, Criterion::forActivePeriod()->with('subscales')->get());
 
         return redirect()->route('participants.index')->with('success', 'Peserta berhasil ditambahkan.');
     }
@@ -67,7 +61,7 @@ class ParticipantController extends Controller
         ]);
     }
 
-    public function update(Request $request, Participant $participant)
+    public function update(Request $request, Participant $participant, ParticipantScoreSyncService $scoreSyncService)
     {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
@@ -80,6 +74,7 @@ class ParticipantController extends Controller
         ]);
 
         $participant->update($validated);
+        $scoreSyncService->syncParticipant($participant, Criterion::where('assessment_period_id', $participant->assessment_period_id)->with('subscales')->get());
 
         return redirect()->route('participants.index')->with('success', 'Peserta berhasil diperbarui.');
     }

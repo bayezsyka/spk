@@ -10,6 +10,7 @@ use App\Models\CriterionWeight;
 use App\Models\Criterion;
 use App\Services\BWM\BwmWeightService;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class BwmStepController extends Controller
 {
@@ -25,29 +26,44 @@ class BwmStepController extends Controller
             'others_to_worst' => 'required|array',
         ]);
 
-        // Store/update BWM comparison preferences
-        BwmComparison::updateOrCreate(
-            ['assessment_period_id' => $period->id],
-            [
-                'best_criterion_id' => $validated['best_criterion_id'],
-                'worst_criterion_id' => $validated['worst_criterion_id'],
-                'best_to_others' => $validated['best_to_others'],
-                'others_to_worst' => $validated['others_to_worst'],
-            ]
-        );
-
-        // Calculate weights using the BWM service
         $criteria = Criterion::where('assessment_period_id', $period->id)
             ->orderBy('sort_order')
             ->get();
 
-        $result = $bwmService->calculateFromComparisons(
-            $criteria,
-            $validated['best_to_others'],
-            $validated['others_to_worst']
+        if (!$criteria->contains('id', (int) $validated['best_criterion_id']) || !$criteria->contains('id', (int) $validated['worst_criterion_id'])) {
+            return back()->with('error', 'Kriteria terbaik dan kriteria prioritas terendah harus berasal dari periode aktif.');
+        }
+
+        $bestToOthers = $validated['best_to_others'];
+        $othersToWorst = $validated['others_to_worst'];
+
+        // Force self-comparison to 1 as per business logic
+        $bestToOthers[$validated['best_criterion_id']] = 1;
+        $othersToWorst[$validated['worst_criterion_id']] = 1;
+
+        try {
+            $result = $bwmService->calculateFromComparisons(
+                $criteria,
+                (int) $validated['best_criterion_id'],
+                (int) $validated['worst_criterion_id'],
+                $bestToOthers,
+                $othersToWorst
+            );
+        } catch (InvalidArgumentException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        BwmComparison::updateOrCreate(
+            ['assessment_period_id' => $period->id],
+            [
+                'best_criterion_id' => $result['best_criterion_id'],
+                'worst_criterion_id' => $result['worst_criterion_id'],
+                'best_to_others' => $result['details']['best_to_others_input'],
+                'others_to_worst' => $result['details']['others_to_worst_input'],
+                'consistency_index' => $result['xi'],
+            ]
         );
 
-        // Store weights per criterion
         foreach ($result['weights'] as $criterionId => $weight) {
             CriterionWeight::updateOrCreate(
                 [
@@ -62,11 +78,6 @@ class BwmStepController extends Controller
             );
         }
 
-        // Update BWM comparison with consistency index
-        BwmComparison::where('assessment_period_id', $period->id)
-            ->update(['consistency_index' => $result['consistency_ratio'] ?? null]);
-
-        // Store calculation run with full intermediate payload
         CalculationRun::create([
             'assessment_period_id' => $period->id,
             'run_code' => 'BWM-' . $period->id . '-' . time(),
@@ -76,7 +87,6 @@ class BwmStepController extends Controller
             'executed_at' => now(),
         ]);
 
-        // Advance pipeline to step 4 (EDAS)
         $period->markStepCompleted(3);
 
         return back()->with('success', 'Pembobotan BWM berhasil dihitung. Lanjut ke kalkulasi EDAS.');

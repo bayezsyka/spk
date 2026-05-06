@@ -8,6 +8,10 @@ class CalculationResult extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'extra_payload' => 'array',
+    ];
+
     public function participant()
     {
         return $this->belongsTo(Participant::class);
