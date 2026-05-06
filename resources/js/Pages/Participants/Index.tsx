@@ -21,9 +21,9 @@ export default function Index({ participants, filters, active_period }: any) {
         router.get(route('participants.index'), { search }, { preserveState: true });
     };
 
-    const handleDelete = (id: number) => {
+    const handleDelete = (participant: any) => {
         if (confirm('Apakah Anda yakin ingin menghapus data peserta ini? Semua data terkait (skor) juga akan terhapus.')) {
-            router.delete(route('participants.destroy', id));
+            router.delete(route('participants.destroy', participant.route_key));
         }
     };
 
@@ -150,7 +150,7 @@ export default function Index({ participants, filters, active_period }: any) {
                                         </td>
                                         <td className="py-4 px-6 text-right space-x-1 whitespace-nowrap">
                                             <Link 
-                                                href={route('participants.edit', p.id)} 
+                                                href={route('participants.edit', p.route_key)} 
                                                 className="inline-flex items-center p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                                 title="Edit Data"
                                             >
@@ -159,7 +159,7 @@ export default function Index({ participants, filters, active_period }: any) {
                                                 </svg>
                                             </Link>
                                             <button 
-                                                onClick={() => handleDelete(p.id)} 
+                                                onClick={() => handleDelete(p)} 
                                                 className="inline-flex items-center p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                                 title="Hapus Data"
                                             >

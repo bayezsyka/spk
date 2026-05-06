@@ -19,7 +19,7 @@ export default function Edit({ participant }: any) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('participants.update', participant.id));
+        put(route('participants.update', participant.route_key));
     };
 
     return (

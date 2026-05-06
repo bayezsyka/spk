@@ -59,6 +59,11 @@ class SetupStepController extends Controller
             }
         }
 
+        // Invalidate downstream calculations when modifying setup
+        if ($period->current_step > 1) {
+            $period->rewindToStep(1);
+        }
+
         return back()->with('success', "Kriteria '{$criterion->name}' berhasil ditambahkan.");
     }
 
@@ -73,6 +78,9 @@ class SetupStepController extends Controller
             'attribute_type' => 'required|in:benefit,cost',
             'input_type' => 'required|in:numeric,categorical',
             'description' => 'nullable|string',
+            'subscales' => 'nullable|array',
+            'subscales.*.label' => 'required_with:subscales|string',
+            'subscales.*.numeric_value' => 'required_with:subscales|numeric',
         ]);
 
         // Check unique code within this period (excluding self)
@@ -85,9 +93,58 @@ class SetupStepController extends Controller
             return back()->withErrors(['code' => 'Kode kriteria sudah digunakan di periode ini.']);
         }
 
-        $criterion->update($validated);
+        $criterion->update([
+            'code' => $validated['code'],
+            'name' => $validated['name'],
+            'attribute_type' => $validated['attribute_type'],
+            'input_type' => $validated['input_type'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        // Replace subscales if provided
+        if (isset($validated['subscales'])) {
+            $criterion->subscales()->delete();
+            foreach ($validated['subscales'] as $index => $subscale) {
+                CriterionSubscale::create([
+                    'criterion_id' => $criterion->id,
+                    'label' => $subscale['label'],
+                    'numeric_value' => $subscale['numeric_value'],
+                    'order_no' => $index + 1,
+                ]);
+            }
+        }
+
+        // Invalidate downstream calculations when modifying setup
+        if ($period->current_step > 1) {
+            $period->rewindToStep(1);
+        }
 
         return back()->with('success', "Kriteria '{$criterion->name}' berhasil diperbarui.");
+    }
+
+    /**
+     * Update subscales for a specific criterion.
+     */
+    public function updateSubscales(Request $request, AssessmentPeriod $period, Criterion $criterion)
+    {
+        $validated = $request->validate([
+            'subscales' => 'required|array|min:1',
+            'subscales.*.label' => 'required|string',
+            'subscales.*.numeric_value' => 'required|numeric',
+        ]);
+
+        $criterion->subscales()->delete();
+
+        foreach ($validated['subscales'] as $index => $subscale) {
+            CriterionSubscale::create([
+                'criterion_id' => $criterion->id,
+                'label' => $subscale['label'],
+                'numeric_value' => $subscale['numeric_value'],
+                'order_no' => $index + 1,
+            ]);
+        }
+
+        return back()->with('success', "Subskala untuk '{$criterion->name}' berhasil diperbarui.");
     }
 
     /**
@@ -96,7 +153,13 @@ class SetupStepController extends Controller
     public function destroyCriteria(AssessmentPeriod $period, Criterion $criterion)
     {
         $name = $criterion->name;
+        $criterion->subscales()->delete();
         $criterion->delete();
+
+        // Invalidate downstream calculations when modifying setup
+        if ($period->current_step > 1) {
+            $period->rewindToStep(1);
+        }
 
         return back()->with('success', "Kriteria '{$name}' berhasil dihapus.");
     }

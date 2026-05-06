@@ -9,6 +9,7 @@ use App\Models\Participant;
 use App\Models\CalculationRun;
 use App\Models\CriterionWeight;
 use App\Services\PipelineStateService;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PipelineController extends Controller
@@ -102,5 +103,33 @@ class PipelineController extends Controller
                 ? $copelandRun->results()->with('participant')->orderBy('final_rank')->get()
                 : [],
         ]);
+    }
+
+    /**
+     * Rewind the pipeline to a previous step, invalidating downstream data.
+     */
+    public function rewind(Request $request, AssessmentPeriod $period)
+    {
+        $validated = $request->validate([
+            'step' => 'required|integer|min:1|max:5',
+        ]);
+
+        $targetStep = $validated['step'];
+
+        if ($targetStep >= $period->current_step) {
+            return back()->with('error', 'Tidak dapat rewind ke tahap yang sama atau lebih tinggi.');
+        }
+
+        $period->rewindToStep($targetStep);
+
+        $stepLabels = [
+            1 => 'Konfigurasi',
+            2 => 'Input Nilai',
+            3 => 'Pembobotan BWM',
+            4 => 'EDAS',
+            5 => 'Copeland',
+        ];
+
+        return back()->with('success', "Pipeline direset ke tahap \"{$stepLabels[$targetStep]}\". Data perhitungan setelah tahap ini telah dihapus.");
     }
 }

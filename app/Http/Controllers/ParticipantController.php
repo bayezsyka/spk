@@ -86,6 +86,7 @@ class ParticipantController extends Controller
 
     public function destroy(Participant $participant)
     {
+        $participant->scores()->delete();
         $participant->delete();
         return redirect()->route('participants.index')->with('success', 'Peserta berhasil dihapus.');
     }

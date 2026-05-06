@@ -65,7 +65,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                             <span className="text-4xl font-extrabold text-slate-900">{totalActiveCriteria}</span>
                             <span className="text-xs text-slate-400 font-medium">Parameter</span>
                         </div>
-                        <Link href={route('criteria.index')} className="mt-6 flex items-center gap-2 text-sm font-bold text-emerald-600 hover:gap-3 transition-all">
+                        <Link href={active_period ? route('pipeline.index', active_period.route_key) : route('periods.index')} className="mt-6 flex items-center gap-2 text-sm font-bold text-emerald-600 hover:gap-3 transition-all">
                             Konfigurasi Kriteria
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -99,10 +99,10 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                         <div className="mt-6 relative z-10 space-y-3">
                             {active_period ? (
                                 <Link
-                                    href={route('pipeline.index', active_period.id)}
+                                    href={route('pipeline.index', active_period.route_key)}
                                     className="block w-full text-center px-4 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
                                 >
-                                    ⚡ Buka Pipeline Analisis
+                                    Buka Pipeline Analisis
                                 </Link>
                             ) : (
                                 <Link
@@ -137,7 +137,7 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
                                 <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
                                 {active_period && (
                                     <Link
-                                        href={route('pipeline.index', active_period.id)}
+                                        href={route('pipeline.index', active_period.route_key)}
                                         className={`inline-flex py-1.5 px-3 bg-${step.color}-50 text-${step.color}-700 rounded-lg text-[10px] font-bold hover:bg-${step.color}-100 transition-colors border border-${step.color}-100`}
                                     >
                                         BUKA PIPELINE
