@@ -19,7 +19,7 @@ export default function ResultStep({ period, completedRuns, finalResults, onNavi
         <div className="space-y-5">
             <PipelineActionBar
                 title="Hasil Akhir"
-                subtitle={`Tahap 6 dari 6 | ${period.name}`}
+                subtitle="Tahap 6 dari 6"
                 onBack={() => onNavigateStep(4)}
                 guide={<PipelineGuide phaseKey="result" />}
                 actions={

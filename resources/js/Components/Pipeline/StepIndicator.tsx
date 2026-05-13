@@ -2,7 +2,7 @@ interface Step {
     key: string;
     label: string;
     stepNumber: number;
-    description: string;
+    description?: string;
 }
 
 interface Props {
@@ -14,74 +14,64 @@ interface Props {
 
 export default function StepIndicator({ steps, activeStep, completedStep, onStepClick }: Props) {
     return (
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-5 shadow-sm">
-            <div className="relative">
-                {/* Background Track — hidden on mobile */}
-                <div className="hidden sm:block absolute top-5 left-[40px] right-[40px] h-px bg-slate-200" />
-                {/* Progress Track */}
-                <div
-                    className="hidden sm:block absolute top-5 left-[40px] h-px bg-indigo-500 transition-all duration-500 ease-out"
-                    style={{ width: `${(completedStep / Math.max(steps.length - 1, 1)) * (100 - (80 / steps.length))}%` }}
-                />
+        <div className="rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+            <div className="grid gap-2 lg:grid-cols-6">
+                {steps.map((step, index) => {
+                    const isCompleted = index < completedStep;
+                    const isActive = index === activeStep;
+                    const isLocked = index > completedStep;
 
-                <div className="relative flex flex-col sm:flex-row sm:justify-between gap-1.5 sm:gap-0">
-                    {steps.map((step, index) => {
-                        const isCompleted = index < completedStep;
-                        const isActive = index === activeStep;
-                        const isLocked = index > completedStep;
-
-                        return (
-                            <button
-                                key={step.key}
-                                onClick={() => !isLocked && onStepClick(index)}
-                                disabled={isLocked}
-                                className={`
-                                    flex sm:flex-col items-center gap-2.5 sm:gap-0 transition-all duration-150
-                                    px-3 py-2 sm:p-0 rounded-lg sm:rounded-none
-                                    ${isActive ? 'bg-indigo-50/70 sm:bg-transparent' : ''}
-                                    ${isLocked ? 'opacity-35 cursor-not-allowed' : 'cursor-pointer'}
-                                    ${!isLocked && !isActive ? 'hover:bg-slate-50 sm:hover:bg-transparent' : ''}
-                                `}
+                    return (
+                        <button
+                            key={step.key}
+                            onClick={() => !isLocked && onStepClick(index)}
+                            disabled={isLocked}
+                            className={[
+                                'flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-all',
+                                isActive ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white',
+                                isCompleted ? 'border-emerald-200 bg-emerald-50/70' : '',
+                                isLocked ? 'cursor-not-allowed opacity-45' : 'hover:border-slate-300',
+                            ].join(' ')}
+                        >
+                            <div
+                                className={[
+                                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-xs font-bold',
+                                    isActive ? 'border-indigo-600 bg-indigo-600 text-white' : '',
+                                    isCompleted ? 'border-emerald-500 bg-emerald-500 text-white' : '',
+                                    !isActive && !isCompleted ? 'border-slate-200 bg-slate-50 text-slate-500' : '',
+                                ].join(' ')}
                             >
-                                {/* Step Circle */}
-                                <div className={`
-                                    relative w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center
-                                    text-xs font-semibold border transition-all duration-200 shrink-0
-                                    ${isActive
-                                        ? 'bg-indigo-600 border-indigo-600 text-white sm:scale-105 shadow-md shadow-indigo-200/50'
-                                        : isCompleted
-                                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                                            : 'bg-white border-slate-200 text-slate-400'
-                                    }
-                                `}>
-                                    {isCompleted ? (
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    ) : (
-                                        <span>{step.stepNumber}</span>
+                                {isCompleted ? (
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                ) : (
+                                    step.stepNumber
+                                )}
+                            </div>
+
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className={[
+                                            'truncate text-[11px] font-bold uppercase tracking-[0.18em]',
+                                            isActive ? 'text-indigo-700' : '',
+                                            isCompleted ? 'text-emerald-700' : '',
+                                            !isActive && !isCompleted ? 'text-slate-600' : '',
+                                        ].join(' ')}
+                                    >
+                                        {step.label}
+                                    </div>
+                                    {step.description && (
+                                        <span className="hidden rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-semibold text-slate-400 sm:inline">
+                                            {step.description}
+                                        </span>
                                     )}
                                 </div>
-
-                                {/* Labels */}
-                                <div className="sm:text-center">
-                                    <span className={`
-                                        block text-[10px] sm:mt-2.5 font-semibold uppercase tracking-wider
-                                        ${isActive ? 'text-indigo-600' : isCompleted ? 'text-emerald-600' : 'text-slate-400'}
-                                    `}>
-                                        {step.label}
-                                    </span>
-                                    <span className={`
-                                        hidden sm:block text-[9px] font-medium mt-0.5
-                                        ${isActive ? 'text-indigo-400' : 'text-slate-300'}
-                                    `}>
-                                        {step.description}
-                                    </span>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </div>
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

@@ -47,8 +47,8 @@ export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
     return (
         <div className="space-y-5">
             <PipelineActionBar
-                title="Pembobotan BWM"
-                subtitle={`Tahap 3 dari 6 | ${period.name}`}
+                title="BWM"
+                subtitle="Tahap 3 dari 6"
                 onBack={() => onNavigateStep(1)}
                 guide={<PipelineGuide phaseKey="bwm" />}
                 actions={
@@ -79,51 +79,64 @@ export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
             />
 
             {!hasResult && (
-                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1.5">Kriteria Terbaik</label>
-                            <select
-                                value={bestId}
-                                onChange={(event) => {
-                                    const val = event.target.value === '' ? '' : Number(event.target.value);
-                                    setBestId(val);
-                                    if (val !== '') {
-                                        setBestToOthers(prev => ({ ...prev, [val]: 1 }));
-                                    }
-                                }}
-                                className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="">Pilih kriteria terbaik...</option>
-                                {criteria.map((criterion: any) => (
-                                    <option key={criterion.id} value={criterion.id} disabled={criterion.id === worstId}>
-                                        {criterion.code} - {criterion.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1.5">Kriteria Prioritas Terendah</label>
-                            <select
-                                value={worstId}
-                                onChange={(event) => {
-                                    const val = event.target.value === '' ? '' : Number(event.target.value);
-                                    setWorstId(val);
-                                    if (val !== '') {
-                                        setOthersToWorst(prev => ({ ...prev, [val]: 1 }));
-                                    }
-                                }}
-                                className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            >
-                                <option value="">Pilih kriteria prioritas terendah...</option>
-                                {criteria.map((criterion: any) => (
-                                    <option key={criterion.id} value={criterion.id} disabled={criterion.id === bestId}>
-                                        {criterion.code} - {criterion.name}
-                                    </option>
-                                ))}
-                            </select>
+                <div className="space-y-4">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Input prioritas</p>
+                                <p className="mt-1 text-sm text-slate-600">Tentukan kriteria terbaik, kriteria terendah, lalu isi preferensi 1 sampai 9.</p>
+                            </div>
+                            <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                                Output: bobot + consistency ratio
+                            </span>
                         </div>
                     </div>
+
+                    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1.5">Kriteria Terbaik</label>
+                                <select
+                                    value={bestId}
+                                    onChange={(event) => {
+                                        const val = event.target.value === '' ? '' : Number(event.target.value);
+                                        setBestId(val);
+                                        if (val !== '') {
+                                            setBestToOthers(prev => ({ ...prev, [val]: 1 }));
+                                        }
+                                    }}
+                                    className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                >
+                                    <option value="">Pilih kriteria terbaik...</option>
+                                    {criteria.map((criterion: any) => (
+                                        <option key={criterion.id} value={criterion.id} disabled={criterion.id === worstId}>
+                                            {criterion.code} - {criterion.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-600 mb-1.5">Kriteria Prioritas Terendah</label>
+                                <select
+                                    value={worstId}
+                                    onChange={(event) => {
+                                        const val = event.target.value === '' ? '' : Number(event.target.value);
+                                        setWorstId(val);
+                                        if (val !== '') {
+                                            setOthersToWorst(prev => ({ ...prev, [val]: 1 }));
+                                        }
+                                    }}
+                                    className="w-full rounded-lg border-slate-300 bg-white py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                >
+                                    <option value="">Pilih kriteria prioritas terendah...</option>
+                                    {criteria.map((criterion: any) => (
+                                        <option key={criterion.id} value={criterion.id} disabled={criterion.id === bestId}>
+                                            {criterion.code} - {criterion.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
 
                     {bestId && (
                         <div>
@@ -213,6 +226,7 @@ export default function BwmStep({ period, stepData, onNavigateStep }: Props) {
                         </div>
                     )}
 
+                    </div>
                 </div>
             )}
 

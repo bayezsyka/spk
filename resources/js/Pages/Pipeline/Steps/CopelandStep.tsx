@@ -53,7 +53,7 @@ export default function CopelandStep({ period, stepData, onNavigateStep }: Props
         <div className="space-y-5">
             <PipelineActionBar
                 title="Pemeringkatan Copeland"
-                subtitle={`Tahap 5 dari 6 | ${period.name}`}
+                subtitle="Tahap 5 dari 6"
                 onBack={() => onNavigateStep(3)}
                 guide={<PipelineGuide phaseKey="copeland" />}
                 actions={

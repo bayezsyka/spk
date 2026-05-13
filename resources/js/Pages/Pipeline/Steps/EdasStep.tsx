@@ -36,7 +36,7 @@ export default function EdasStep({ period, stepData, onNavigateStep }: Props) {
         <div className="space-y-5">
             <PipelineActionBar
                 title="Kalkulasi EDAS"
-                subtitle={`Tahap 4 dari 6 | ${period.name}`}
+                subtitle="Tahap 4 dari 6"
                 onBack={() => onNavigateStep(2)}
                 guide={<PipelineGuide phaseKey="edas" />}
                 actions={

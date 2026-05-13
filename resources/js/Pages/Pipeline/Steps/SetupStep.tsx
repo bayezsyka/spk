@@ -14,6 +14,8 @@ interface Props {
 
 export default function SetupStep({ period, stepData, pipelineState, onNavigateStep }: Props) {
     const criteria = stepData.setup?.criteria || [];
+    const numericCriteria = criteria.filter((criterion: any) => criterion.input_type === 'numeric').length;
+    const categoricalCriteria = criteria.filter((criterion: any) => criterion.input_type === 'categorical').length;
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -85,8 +87,8 @@ export default function SetupStep({ period, stepData, pipelineState, onNavigateS
     return (
         <div className="space-y-5">
             <PipelineActionBar
-                title="Konfigurasi Kriteria"
-                subtitle={`Tahap 1 dari 6 | ${period.name}`}
+                title="Kriteria"
+                subtitle="Tahap 1 dari 6"
                 guide={<PipelineGuide phaseKey="setup" />}
                 actions={
                     <>
@@ -116,18 +118,27 @@ export default function SetupStep({ period, stepData, pipelineState, onNavigateS
                 }
             />
 
-            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                        {criteria.length} kriteria aktif
-                    </span>
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                        criteria.length >= 5
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-amber-50 text-amber-700'
-                    }`}>
-                        {criteria.length >= 5 ? 'Siap lanjut' : 'Lengkapi hingga 5 kriteria'}
-                    </span>
+            <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Total</p>
+                    <p className="mt-2 text-2xl font-bold text-slate-900">{criteria.length}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Numerik</p>
+                    <p className="mt-2 text-2xl font-bold text-slate-900">{numericCriteria}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Kategorikal</p>
+                    <div className="mt-2 flex items-end justify-between gap-3">
+                        <p className="text-2xl font-bold text-slate-900">{categoricalCriteria}</p>
+                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
+                            criteria.length >= 5
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-amber-50 text-amber-700'
+                        }`}>
+                            {criteria.length >= 5 ? 'Siap' : 'Min. 5'}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -250,7 +261,7 @@ export default function SetupStep({ period, stepData, pipelineState, onNavigateS
                                     <td colSpan={5}>
                                         <EmptyState
                                             title="Kriteria belum tersedia"
-                                            description="Template kriteria inti belum terbentuk pada periode ini."
+                                            description="Kriteria inti pada periode ini belum siap."
                                         />
                                     </td>
                                 </tr>

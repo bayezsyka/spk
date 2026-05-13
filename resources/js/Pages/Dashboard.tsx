@@ -6,11 +6,11 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
     const { pipeline_state } = usePage().props as any;
 
     const stepLabels: Record<string, string> = {
-        setup: 'Konfigurasi Awal',
-        scoring: 'Input Nilai',
-        bwm: 'Pembobotan BWM',
-        edas: 'Kalkulasi EDAS',
-        copeland: 'Pemeringkatan Copeland',
+        setup: 'Kriteria',
+        scoring: 'Peserta & Nilai',
+        bwm: 'BWM',
+        edas: 'EDAS',
+        copeland: 'Copeland',
         completed: 'Selesai',
     };
 
@@ -21,126 +21,140 @@ export default function Dashboard({ totalParticipants, totalActiveCriteria, acti
             header={
                 <div>
                     <Breadcrumbs items={[]} />
-                    <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Dashboard Utama</h2>
-                    <p className="text-slate-500 mt-1 text-sm">
-                        Ringkasan data dan kontrol cepat untuk sistem pendukung keputusan penerimaan peserta LPKS.
-                    </p>
+                    <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Dashboard</h2>
                 </div>
             }
         >
             <Head title="Dashboard" />
 
-            <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                    <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/50 group hover:border-indigo-500 transition-all">
-                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Total Peserta</h3>
-                        <div className="mt-2 flex items-baseline gap-2">
-                            <span className="text-4xl font-extrabold text-slate-900">{totalParticipants}</span>
-                            <span className="text-xs text-slate-400 font-medium">Peserta</span>
-                        </div>
-                        <Link href={route('participants.index')} className="mt-6 flex items-center gap-2 text-sm font-bold text-indigo-600 hover:gap-3 transition-all">
-                            Kelola Peserta
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                        </Link>
-                    </div>
-
-                    <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/50 group hover:border-emerald-500 transition-all">
-                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                            </svg>
-                        </div>
-                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Kriteria Aktif</h3>
-                        <div className="mt-2 flex items-baseline gap-2">
-                            <span className="text-4xl font-extrabold text-slate-900">{totalActiveCriteria}</span>
-                            <span className="text-xs text-slate-400 font-medium">Kriteria</span>
-                        </div>
-                        <Link href={active_period ? route('pipeline.index', active_period.route_key) : route('periods.index')} className="mt-6 flex items-center gap-2 text-sm font-bold text-emerald-600 hover:gap-3 transition-all">
-                            Konfigurasi Kriteria
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                        </Link>
-                    </div>
-
-                    <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
-                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest relative z-10">Periode Aktif</h3>
-                        <div className="mt-3 relative z-10">
-                            <div className="text-xl font-bold text-slate-900 leading-tight">{active_period?.name || 'Tidak ada periode aktif'}</div>
-                            {pipeline_state && (
-                                <div className="mt-3 space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-black py-1 px-2.5 bg-indigo-50 text-indigo-700 rounded-lg inline-block border border-indigo-100 uppercase tracking-widest">
-                                            {stepLabels[pipeline_state.status] || pipeline_state.status}
+            <div className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+                    <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                        <div className="absolute right-0 top-0 h-40 w-40 -translate-y-10 translate-x-10 rounded-full bg-indigo-50" />
+                        <div className="relative z-10">
+                            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                                <div>
+                                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">Periode aktif</p>
+                                    <h3 className="mt-2 text-2xl font-bold text-slate-900">
+                                        {active_period?.name || 'Belum ada periode aktif'}
+                                    </h3>
+                                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                                        <span className="inline-flex rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700">
+                                            {pipeline_state ? stepLabels[pipeline_state.status] || pipeline_state.status : 'Belum dimulai'}
                                         </span>
-                                        <span className="text-xs font-bold text-slate-400">{pipeline_state.current_step}/6</span>
+                                        {pipeline_state && (
+                                            <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                                                Tahap {pipeline_state.current_step}/6
+                                            </span>
+                                        )}
                                     </div>
-                                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-700"
-                                            style={{ width: `${stepProgress}%` }}
-                                        />
+                                </div>
+
+                                <div className="flex flex-wrap gap-3">
+                                    {active_period ? (
+                                        <>
+                                            <Link
+                                                href={route('pipeline.index', active_period.route_key)}
+                                                className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-indigo-700"
+                                            >
+                                                Buka pipeline
+                                            </Link>
+                                            <Link
+                                                href={route('periods.index')}
+                                                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                                            >
+                                                Kelola periode
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        <Link
+                                            href={route('periods.index')}
+                                            className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800"
+                                        >
+                                            Buat periode
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
+
+                            {pipeline_state && (
+                                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Progress</div>
+                                        <div className="mt-2 text-2xl font-bold text-slate-900">{stepProgress}%</div>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Tahap aktif</div>
+                                        <div className="mt-2 text-2xl font-bold text-slate-900">{pipeline_state.current_step}/6</div>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Status</div>
+                                        <div className="mt-2 text-base font-bold text-slate-900">
+                                            {stepLabels[pipeline_state.status] || pipeline_state.status}
+                                        </div>
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <div className="mt-6 relative z-10 space-y-3">
-                            {active_period ? (
-                                <Link
-                                    href={route('pipeline.index', active_period.route_key)}
-                                    className="block w-full text-center px-4 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
-                                >
-                                    Buka Alur Penilaian
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Peserta</p>
+                                <Link href={route('participants.index')} className="text-sm font-semibold text-indigo-600">
+                                    Kelola
                                 </Link>
-                            ) : (
+                            </div>
+                            <div className="mt-3 text-3xl font-extrabold text-slate-900">{totalParticipants}</div>
+                        </div>
+
+                        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Kriteria</p>
                                 <Link
-                                    href={route('periods.index')}
-                                    className="block w-full text-center px-4 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"
+                                    href={active_period ? route('pipeline.index', active_period.route_key) : route('periods.index')}
+                                    className="text-sm font-semibold text-indigo-600"
                                 >
-                                    Kelola Periode
+                                    Lihat
                                 </Link>
-                            )}
+                            </div>
+                            <div className="mt-3 text-3xl font-extrabold text-slate-900">{totalActiveCriteria}</div>
+                        </div>
+
+                        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Status</p>
+                            <div className="mt-3 text-xl font-bold text-slate-900">
+                                {active_period ? 'Periode siap dikerjakan' : 'Menunggu periode aktif'}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div>
-                            <h3 className="text-xl font-bold text-slate-900">Alur Perhitungan SPK</h3>
-                            <p className="text-sm text-slate-500 mt-1">Alur penilaian berurutan untuk memastikan proses perhitungan berjalan sistematis.</p>
-                        </div>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest shrink-0">BWM - EDAS - COPELAND</span>
-                    </div>
-                    <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                        {[
-                            { num: '01', title: 'Konfigurasi & BWM', desc: 'Atur 5 kriteria inti, kelola peserta, lalu hitung bobot prioritas dengan Best-Worst Method.', color: 'indigo' },
-                            { num: '02', title: 'Kalkulasi EDAS', desc: 'Hitung solusi rata-rata, PDA, NDA, dan Appraisal Score untuk setiap peserta.', color: 'blue' },
-                            { num: '03', title: 'Copeland & Ranking', desc: 'Bandingkan skor EDAS secara berpasangan untuk menghasilkan peringkat akhir.', color: 'emerald' },
-                        ].map((step, index) => (
-                            <div key={index} className={`space-y-4 ${index > 0 ? 'sm:border-l sm:border-slate-100 sm:pl-8' : ''}`}>
-                                <div className="text-4xl font-black text-slate-100">{step.num}</div>
-                                <h4 className="font-bold text-slate-900 uppercase text-xs tracking-wider">{step.title}</h4>
-                                <p className="text-sm text-slate-500 leading-relaxed">{step.desc}</p>
-                                {active_period && (
-                                    <Link
-                                        href={route('pipeline.index', active_period.route_key)}
-                                        className={`inline-flex py-1.5 px-3 bg-${step.color}-50 text-${step.color}-700 rounded-lg text-[10px] font-bold hover:bg-${step.color}-100 transition-colors border border-${step.color}-100`}
-                                    >
-                                        BUKA ALUR
-                                    </Link>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                    <Link
+                        href={route('participants.index')}
+                        className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-indigo-200 hover:bg-indigo-50/30"
+                    >
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Aksi</p>
+                        <h3 className="mt-3 text-lg font-bold text-slate-900">Peserta</h3>
+                    </Link>
+
+                    <Link
+                        href={active_period ? route('pipeline.index', active_period.route_key) : route('periods.index')}
+                        className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-indigo-200 hover:bg-indigo-50/30"
+                    >
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Aksi</p>
+                        <h3 className="mt-3 text-lg font-bold text-slate-900">Pipeline</h3>
+                    </Link>
+
+                    <Link
+                        href={route('periods.index')}
+                        className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-indigo-200 hover:bg-indigo-50/30"
+                    >
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Aksi</p>
+                        <h3 className="mt-3 text-lg font-bold text-slate-900">Periode</h3>
+                    </Link>
                 </div>
             </div>
         </AuthenticatedLayout>
