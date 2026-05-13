@@ -24,10 +24,10 @@ class ParticipantExcelController extends Controller
             'No', 
             'Nama Lengkap', 
             'Pre Test (Nilai 0-100)', 
-            'Wawancara (Kualitatif)', 
+            'Wawancara (Skor 1-5)', 
             'Nilai Rapor (Nilai 0-100)', 
             'Jarak Domisili (km)', 
-            'Kesiapan Kerja'
+            'Kesiapan Pelatihan (Skor 1-5)'
         ];
 
         foreach ($headers as $index => $header) {
@@ -113,36 +113,12 @@ class ParticipantExcelController extends Controller
             }
 
             $preTest = $this->parseScore($row[2] ?? null, 'Pre-Test', $lineNumber, 0, 100, $errors);
-            $interview = Str::of((string) ($row[3] ?? ''))->squish()->value();
+            $interview = $this->parseScore($row[3] ?? null, 'Wawancara', $lineNumber, 1, 5, $errors);
             $report = $this->parseScore($row[4] ?? null, 'Nilai Rapor', $lineNumber, 0, 100, $errors);
             $distance = $this->parseScore($row[5] ?? null, 'Jarak Domisili', $lineNumber, 0, null, $errors);
-            $readiness = Str::of((string) ($row[6] ?? ''))->squish()->value();
+            $readiness = $this->parseScore($row[6] ?? null, 'Kesiapan Pelatihan', $lineNumber, 1, 5, $errors);
 
-            if ($interview === '') {
-                $errors[] = "Baris {$lineNumber}: nilai Wawancara wajib diisi.";
-                continue;
-            }
-
-            if ($readiness === '') {
-                $errors[] = "Baris {$lineNumber}: nilai Kesiapan Kerja wajib diisi.";
-                continue;
-            }
-
-            try {
-                $scoreSyncService->resolveCategoricalValue($criteria['C2'], $interview);
-            } catch (\InvalidArgumentException $exception) {
-                $errors[] = "Baris {$lineNumber}: {$exception->getMessage()}";
-                continue;
-            }
-
-            try {
-                $scoreSyncService->resolveCategoricalValue($criteria['C5'], $readiness);
-            } catch (\InvalidArgumentException $exception) {
-                $errors[] = "Baris {$lineNumber}: {$exception->getMessage()}";
-                continue;
-            }
-
-            if ($preTest === null || $report === null || $distance === null) {
+            if ($preTest === null || $interview === null || $report === null || $distance === null || $readiness === null) {
                 continue;
             }
 

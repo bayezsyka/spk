@@ -31,6 +31,7 @@ class SetupStepController extends Controller
             'description' => 'nullable|string',
             'subscales' => 'nullable|array',
             'subscales.*.label' => 'required_with:subscales|string',
+            'subscales.*.range_hint' => 'nullable|string',
             'subscales.*.numeric_value' => 'required_with:subscales|numeric',
         ]);
 
@@ -59,6 +60,7 @@ class SetupStepController extends Controller
                 CriterionSubscale::create([
                     'criterion_id' => $criterion->id,
                     'label' => $subscale['label'],
+                    'range_hint' => $subscale['range_hint'] ?? null,
                     'numeric_value' => $subscale['numeric_value'],
                     'order_no' => $index + 1,
                 ]);
@@ -81,6 +83,7 @@ class SetupStepController extends Controller
         $validated = $request->validate([
             'subscales' => 'required|array|min:1',
             'subscales.*.label' => 'required|string',
+            'subscales.*.range_hint' => 'nullable|string',
             'subscales.*.numeric_value' => 'required|numeric',
         ]);
 
@@ -90,6 +93,7 @@ class SetupStepController extends Controller
             CriterionSubscale::create([
                 'criterion_id' => $criterion->id,
                 'label' => $subscale['label'],
+                'range_hint' => $subscale['range_hint'] ?? null,
                 'numeric_value' => $subscale['numeric_value'],
                 'order_no' => $index + 1,
             ]);

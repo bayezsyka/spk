@@ -13,11 +13,18 @@ class AssessmentPeriod extends Model
         'C1' => [
             'code' => 'C1',
             'name' => 'Nilai Pre-Test',
-            'description' => 'Nilai hasil ujian tertulis atau kompetensi dasar.',
+            'description' => 'Nilai hasil ujian tertulis atau kompetensi dasar (0-100, diklasifikasi ke skor 1-5).',
             'attribute_type' => 'benefit',
-            'input_type' => 'numeric',
+            'input_type' => 'categorical',
             'sort_order' => 1,
             'is_active' => true,
+            'subscales' => [
+                ['label' => 'Sangat Kurang', 'range_hint' => '< 40',     'numeric_value' => 1, 'order_no' => 1],
+                ['label' => 'Kurang',         'range_hint' => '41 – 55',  'numeric_value' => 2, 'order_no' => 2],
+                ['label' => 'Cukup',          'range_hint' => '56 – 70',  'numeric_value' => 3, 'order_no' => 3],
+                ['label' => 'Baik',           'range_hint' => '71 – 85',  'numeric_value' => 4, 'order_no' => 4],
+                ['label' => 'Sangat Baik',    'range_hint' => '86 – 100', 'numeric_value' => 5, 'order_no' => 5],
+            ],
         ],
         'C2' => [
             'code' => 'C2',
@@ -28,44 +35,59 @@ class AssessmentPeriod extends Model
             'sort_order' => 2,
             'is_active' => true,
             'subscales' => [
-                ['label' => 'Kurang Motivasi', 'numeric_value' => 1, 'order_no' => 1],
-                ['label' => 'Kurang Komunikatif', 'numeric_value' => 2, 'order_no' => 2],
-                ['label' => 'Cukup Komunikatif', 'numeric_value' => 3, 'order_no' => 3],
-                ['label' => 'Komunikatif', 'numeric_value' => 4, 'order_no' => 4],
-                ['label' => 'Sangat Komunikatif', 'numeric_value' => 5, 'order_no' => 5],
+                ['label' => 'Tidak Komunikatif',  'range_hint' => 'Tidak tahu alasan memilih pelatihan',           'numeric_value' => 1, 'order_no' => 1],
+                ['label' => 'Kurang Komunikatif', 'range_hint' => 'Motivasi rendah',                               'numeric_value' => 2, 'order_no' => 2],
+                ['label' => 'Cukup Komunikatif',  'range_hint' => 'Motivasi rata-rata, rencana karier kurang jelas','numeric_value' => 3, 'order_no' => 3],
+                ['label' => 'Komunikatif',         'range_hint' => 'Motivasi tinggi, memahami tujuan pelatihan',   'numeric_value' => 4, 'order_no' => 4],
+                ['label' => 'Sangat Komunikatif',  'range_hint' => 'Motivasi sangat tinggi, rencana karier jelas', 'numeric_value' => 5, 'order_no' => 5],
             ],
         ],
         'C3' => [
             'code' => 'C3',
             'name' => 'Nilai Rapor',
-            'description' => 'Rata-rata nilai akademik dari pendidikan terakhir.',
+            'description' => 'Rata-rata nilai akademik dari pendidikan terakhir (0-100, diklasifikasi ke skor 1-5).',
             'attribute_type' => 'benefit',
-            'input_type' => 'numeric',
+            'input_type' => 'categorical',
             'sort_order' => 3,
             'is_active' => true,
+            'subscales' => [
+                ['label' => 'Sangat Kurang', 'range_hint' => '< 40',     'numeric_value' => 1, 'order_no' => 1],
+                ['label' => 'Kurang',         'range_hint' => '41 – 55',  'numeric_value' => 2, 'order_no' => 2],
+                ['label' => 'Cukup',          'range_hint' => '56 – 70',  'numeric_value' => 3, 'order_no' => 3],
+                ['label' => 'Baik',           'range_hint' => '71 – 85',  'numeric_value' => 4, 'order_no' => 4],
+                ['label' => 'Sangat Baik',    'range_hint' => '86 – 100', 'numeric_value' => 5, 'order_no' => 5],
+            ],
         ],
         'C4' => [
             'code' => 'C4',
             'name' => 'Jarak Domisili',
-            'description' => 'Estimasi jarak tempuh ke lokasi kerja dalam kilometer.',
+            'description' => 'Estimasi jarak tempuh ke lokasi pelatihan dalam kilometer.',
             'attribute_type' => 'cost',
-            'input_type' => 'numeric',
+            'input_type' => 'categorical',
             'sort_order' => 4,
             'is_active' => true,
+            'subscales' => [
+                ['label' => 'Sangat Jauh',  'range_hint' => '> 40 km',    'numeric_value' => 1, 'order_no' => 1],
+                ['label' => 'Jauh',         'range_hint' => '> 20 – 40 km','numeric_value' => 2, 'order_no' => 2],
+                ['label' => 'Cukup Jauh',   'range_hint' => '> 10 – 20 km','numeric_value' => 3, 'order_no' => 3],
+                ['label' => 'Dekat',        'range_hint' => '> 5 – 10 km', 'numeric_value' => 4, 'order_no' => 4],
+                ['label' => 'Sangat Dekat', 'range_hint' => '0 – 5 km',   'numeric_value' => 5, 'order_no' => 5],
+            ],
         ],
         'C5' => [
             'code' => 'C5',
-            'name' => 'Kesiapan Kerja',
-            'description' => 'Tingkat kesiapan peserta untuk mulai bekerja.',
+            'name' => 'Kesiapan Pelatihan',
+            'description' => 'Tingkat kesiapan peserta untuk mengikuti pelatihan.',
             'attribute_type' => 'benefit',
             'input_type' => 'categorical',
             'sort_order' => 5,
             'is_active' => true,
             'subscales' => [
-                ['label' => 'Kurang Siap', 'numeric_value' => 1, 'order_no' => 1],
-                ['label' => 'Cukup Siap', 'numeric_value' => 2, 'order_no' => 2],
-                ['label' => 'Siap', 'numeric_value' => 3, 'order_no' => 3],
-                ['label' => 'Sangat Siap', 'numeric_value' => 4, 'order_no' => 4],
+                ['label' => 'Tidak Siap',   'range_hint' => 'Terikat kontrak lain, tidak bisa jadwal penuh',           'numeric_value' => 1, 'order_no' => 1],
+                ['label' => 'Kurang Siap',  'range_hint' => 'Ada kesibukan sampingan yang berpotensi mengganggu',       'numeric_value' => 2, 'order_no' => 2],
+                ['label' => 'Cukup Siap',   'range_hint' => 'Bersedia pelatihan, masih ragu soal penempatan luar kota', 'numeric_value' => 3, 'order_no' => 3],
+                ['label' => 'Siap',         'range_hint' => 'Bersedia ditempatkan (syarat tertentu), komit jadwal penuh','numeric_value' => 4, 'order_no' => 4],
+                ['label' => 'Sangat Siap',  'range_hint' => 'Bersedia ditempatkan di mana saja, komit jadwal penuh',   'numeric_value' => 5, 'order_no' => 5],
             ],
         ],
     ];
@@ -191,6 +213,11 @@ class AssessmentPeriod extends Model
     {
         $stepNames = self::stepNames();
 
+        // If rewinding to setup, refresh criteria definitions from core config
+        if ($step === 1) {
+            $this->syncCriteriaWithDefault();
+        }
+
         // Clear downstream calculation runs
         if ($step <= 3) {
             CalculationRun::where('assessment_period_id', $this->id)
@@ -245,6 +272,9 @@ class AssessmentPeriod extends Model
         ParticipantScore::whereIn('participant_id', $participantIds)->delete();
         Participant::where('assessment_period_id', $this->id)->delete();
 
+        // Refresh criteria definitions from core config
+        $this->syncCriteriaWithDefault();
+
         // Reset pipeline state
         $this->update([
             'current_step' => 1,
@@ -268,9 +298,6 @@ class AssessmentPeriod extends Model
         ];
     }
 
-    /**
-     * Create default template criteria for this period.
-     */
     public function createDefaultCriteria(): void
     {
         foreach (self::CORE_CRITERIA as $data) {
@@ -281,6 +308,34 @@ class AssessmentPeriod extends Model
             
             if ($subscales) {
                 $criterion->subscales()->createMany($subscales);
+            }
+        }
+    }
+
+    /**
+     * Synchronize existing criteria with the latest CORE_CRITERIA definition.
+     * This updates names, types, descriptions and refreshes subscales.
+     */
+    public function syncCriteriaWithDefault(): void
+    {
+        foreach (self::CORE_CRITERIA as $code => $config) {
+            $subscales = $config['subscales'] ?? null;
+            unset($config['subscales']);
+
+            $criterion = $this->criteria()->where('code', $code)->first();
+
+            if ($criterion) {
+                $criterion->update($config);
+                if ($subscales) {
+                    $criterion->subscales()->delete();
+                    $criterion->subscales()->createMany($subscales);
+                }
+            } else {
+                // If somehow missing, create it
+                $newCriterion = $this->criteria()->create($config);
+                if ($subscales) {
+                    $newCriterion->subscales()->createMany($subscales);
+                }
             }
         }
     }

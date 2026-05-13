@@ -23,6 +23,13 @@ class ParticipantScoreSyncService
         'C5' => 'work_readiness_grade',
     ];
 
+    /**
+     * Criteria codes that receive raw numeric input and need classification.
+     * These are categorical in definition but accept raw values (0-100, km)
+     * which get auto-classified to 1-5 scores.
+     */
+    private const CLASSIFIABLE_CRITERIA = ['C1', 'C3', 'C4'];
+
     public function syncParticipant(Participant $participant, ?Collection $criteria = null): int
     {
         $criteria ??= Criterion::where('assessment_period_id', $participant->assessment_period_id)
@@ -76,6 +83,12 @@ class ParticipantScoreSyncService
 
     public function resolveCriterionValue(Criterion $criterion, mixed $value): float
     {
+        // C1, C3, C4 receive raw numeric values that need auto-classification
+        if (in_array($criterion->code, self::CLASSIFIABLE_CRITERIA, true)) {
+            return $this->classifyScore($criterion->code, (float) $value);
+        }
+
+        // C2, C5 receive numeric scores (1-5) directly
         if ($criterion->input_type === 'categorical') {
             return $this->resolveCategoricalValue($criterion, $value);
         }
@@ -83,8 +96,66 @@ class ParticipantScoreSyncService
         return (float) $value;
     }
 
+    /**
+     * Classify raw numeric values into 1-5 scores.
+     *
+     * C1 & C3 (Pre-Test & Rapor): 86-100→5, 71-85→4, 56-70→3, 41-55→2, <40→1
+     * C4 (Jarak Domisili/COST):   0-5km→5, >5-10→4, >10-20→3, >20-40→2, >40→1
+     */
+    private function classifyScore(string $criterionCode, float $value): float
+    {
+        return match ($criterionCode) {
+            'C1', 'C3' => match (true) {
+                $value >= 86 => 5,
+                $value >= 71 => 4,
+                $value >= 56 => 3,
+                $value >= 41 => 2,
+                default      => 1,
+            },
+            'C4' => match (true) {
+                $value <= 5  => 5,
+                $value <= 10 => 4,
+                $value <= 20 => 3,
+                $value <= 40 => 2,
+                default      => 1,
+            },
+            default => $value,
+        };
+    }
+
+    /**
+     * Resolve a categorical value — accepts either a numeric score (1-5)
+     * or a text label matching a subscale.
+     */
     public function resolveCategoricalValue(Criterion $criterion, mixed $value): float
     {
+        // If value is numeric, match by numeric_value in subscales
+        if (is_numeric($value)) {
+            $numericInput = (float) $value;
+            $criterion->loadMissing('subscales');
+
+            foreach ($criterion->subscales as $subscale) {
+                if ((float) $subscale->numeric_value === $numericInput) {
+                    return $numericInput;
+                }
+            }
+
+            // Allow if within valid subscale range
+            if ($criterion->subscales->isNotEmpty()) {
+                $minVal = $criterion->subscales->min('numeric_value');
+                $maxVal = $criterion->subscales->max('numeric_value');
+                if ($numericInput >= $minVal && $numericInput <= $maxVal) {
+                    return $numericInput;
+                }
+            }
+
+            $allowedValues = $criterion->subscales->pluck('numeric_value')->implode(', ');
+            throw new InvalidArgumentException(
+                "Skor \"{$value}\" tidak valid untuk {$criterion->name}. Gunakan salah satu dari: {$allowedValues}."
+            );
+        }
+
+        // Otherwise match by label text
         $normalizedInput = $this->normalizeLabel($value);
 
         if ($normalizedInput === '') {

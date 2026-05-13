@@ -110,7 +110,7 @@ export default function Edit({ participant }: any) {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="interview_grade" value="Kualitas Wawancara" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
+                                <InputLabel htmlFor="interview_grade" value="Wawancara (Skor 1-5)" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
                                 <select
                                     id="interview_grade"
                                     className="mt-1 block w-full bg-slate-50 border-slate-200 rounded-2xl py-4 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-bold text-slate-700"
@@ -118,12 +118,12 @@ export default function Edit({ participant }: any) {
                                     onChange={(e) => setData('interview_grade', e.target.value)}
                                     required
                                 >
-                                    <option value="">Pilih Kualitas...</option>
-                                    <option value="Sangat Komunikatif">Sangat Komunikatif</option>
-                                    <option value="Komunikatif">Komunikatif</option>
-                                    <option value="Cukup Komunikatif">Cukup Komunikatif</option>
-                                    <option value="Kurang Komunikatif">Kurang Komunikatif</option>
-                                    <option value="Kurang Motivasi">Kurang Motivasi</option>
+                                    <option value="">Pilih Skor...</option>
+                                    <option value="5">5 — Sangat Komunikatif</option>
+                                    <option value="4">4 — Komunikatif</option>
+                                    <option value="3">3 — Cukup Komunikatif</option>
+                                    <option value="2">2 — Kurang Komunikatif</option>
+                                    <option value="1">1 — Tidak Komunikatif</option>
                                 </select>
                                 <InputError message={errors.interview_grade} className="mt-2" />
                             </div>
@@ -143,7 +143,7 @@ export default function Edit({ participant }: any) {
                                     <InputError message={errors.domicile_distance_km} className="mt-2" />
                                 </div>
                                 <div>
-                                    <InputLabel htmlFor="work_readiness_grade" value="Kesiapan" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
+                                    <InputLabel htmlFor="work_readiness_grade" value="Kesiapan Pelatihan (Skor 1-5)" className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" />
                                     <select
                                         id="work_readiness_grade"
                                         className="mt-1 block w-full bg-slate-50 border-slate-200 rounded-2xl py-4 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-bold text-slate-700"
@@ -151,11 +151,12 @@ export default function Edit({ participant }: any) {
                                         onChange={(e) => setData('work_readiness_grade', e.target.value)}
                                         required
                                     >
-                                        <option value="">Pilih...</option>
-                                        <option value="Sangat Siap">Sangat Siap</option>
-                                        <option value="Siap">Siap</option>
-                                        <option value="Cukup Siap">Cukup Siap</option>
-                                        <option value="Kurang Siap">Kurang Siap</option>
+                                        <option value="">Pilih Skor...</option>
+                                        <option value="5">5 — Sangat Siap</option>
+                                        <option value="4">4 — Siap</option>
+                                        <option value="3">3 — Cukup Siap</option>
+                                        <option value="2">2 — Kurang Siap</option>
+                                        <option value="1">1 — Tidak Siap</option>
                                     </select>
                                     <InputError message={errors.work_readiness_grade} className="mt-2" />
                                 </div>

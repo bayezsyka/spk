@@ -11,9 +11,13 @@ interface Props {
     onNavigateStep: (step: number) => void;
 }
 
+const ACCEPTED_COUNT = 30;
+
 export default function ResultStep({ period, completedRuns, finalResults, onNavigateStep }: Props) {
     const results = finalResults || [];
     const copelandRun = completedRuns?.copeland;
+    const acceptedResults = results.filter((r: any) => r.final_rank <= ACCEPTED_COUNT);
+    const totalResults = results.length;
 
     return (
         <div className="space-y-5">
@@ -24,12 +28,23 @@ export default function ResultStep({ period, completedRuns, finalResults, onNavi
                 guide={<PipelineGuide phaseKey="result" />}
                 actions={
                     results.length > 0 ? (
-                        <span className="flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-600">
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                            PENILAIAN SELESAI
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <a
+                                href={route('pipeline.result.export', period.route_key)}
+                                className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-100"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Export XLSX
+                            </a>
+                            <span className="flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-600">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                                PENILAIAN SELESAI
+                            </span>
+                        </div>
                     ) : (
                         <span className="flex items-center gap-1.5 rounded-full border border-amber-100 bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-700">
                             HASIL BELUM TERSEDIA
@@ -63,6 +78,20 @@ export default function ResultStep({ period, completedRuns, finalResults, onNavi
                                     </span>
                                 </div>
                             )}
+                            <div className="mt-3 flex flex-wrap gap-3">
+                                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Peserta</div>
+                                    <div className="mt-0.5 text-xl font-bold text-slate-900">{totalResults}</div>
+                                </div>
+                                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Diterima</div>
+                                    <div className="mt-0.5 text-xl font-bold text-blue-700">{Math.min(acceptedResults.length, ACCEPTED_COUNT)}</div>
+                                </div>
+                                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tidak Diterima</div>
+                                    <div className="mt-0.5 text-xl font-bold text-slate-500">{Math.max(totalResults - ACCEPTED_COUNT, 0)}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -98,7 +127,15 @@ export default function ResultStep({ period, completedRuns, finalResults, onNavi
 
                     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-                            <h4 className="text-sm font-medium text-slate-900">Tabel Peringkat Lengkap</h4>
+                            <div className="flex items-center gap-3">
+                                <h4 className="text-sm font-medium text-slate-900">Tabel Peringkat Lengkap</h4>
+                                <div className="flex items-center gap-2 text-[10px]">
+                                    <span className="flex items-center gap-1">
+                                        <span className="inline-block h-2.5 w-2.5 rounded-sm bg-blue-100 border border-blue-200"></span>
+                                        <span className="text-slate-400">Diterima (Top {ACCEPTED_COUNT})</span>
+                                    </span>
+                                </div>
+                            </div>
                             <span className="text-xs text-slate-400">{results.length} peserta</span>
                         </div>
                         <div className="overflow-x-auto">
@@ -110,38 +147,63 @@ export default function ResultStep({ period, completedRuns, finalResults, onNavi
                                         <th className="py-3 px-5 text-right text-xs font-medium text-slate-500">Skor EDAS</th>
                                         <th className="py-3 px-5 text-center text-xs font-medium text-slate-500">M / K / I</th>
                                         <th className="py-3 px-5 text-right text-xs font-medium text-slate-500">Skor Copeland</th>
+                                        <th className="py-3 px-5 text-center text-xs font-medium text-slate-500">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {results.map((result: any) => (
-                                        <tr key={result.id} className="transition-colors hover:bg-slate-50/50">
-                                            <td className="py-3.5 px-5 text-center">
-                                                <RankBadge rank={result.final_rank} size="sm" />
-                                            </td>
-                                            <td className="py-3.5 px-5 text-sm font-medium text-slate-900">{result.participant?.full_name}</td>
-                                            <td className="py-3.5 px-5 text-right font-mono text-xs text-slate-500">
-                                                {result.edas_score != null ? Number(result.edas_score).toFixed(6) : '-'}
-                                            </td>
-                                            <td className="py-3.5 px-5 text-center text-xs">
-                                                <span className="font-medium text-emerald-600">{result.copeland_wins ?? '-'}</span>
-                                                <span className="mx-1 text-slate-300">/</span>
-                                                <span className="font-medium text-rose-500">{result.copeland_losses ?? '-'}</span>
-                                                <span className="mx-1 text-slate-300">/</span>
-                                                <span className="font-medium text-slate-500">{result.extra_payload?.ties ?? '-'}</span>
-                                            </td>
-                                            <td className="py-3.5 px-5 text-right">
-                                                <span className={`font-semibold ${
-                                                    result.copeland_score > 0
-                                                        ? 'text-indigo-600'
-                                                        : result.copeland_score < 0
-                                                            ? 'text-rose-500'
-                                                            : 'text-slate-400'
-                                                }`}>
-                                                    {result.copeland_score > 0 ? '+' : ''}{result.copeland_score}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {results.map((result: any) => {
+                                        const isAccepted = result.final_rank <= ACCEPTED_COUNT;
+                                        return (
+                                            <tr
+                                                key={result.id}
+                                                className={`transition-colors ${
+                                                    isAccepted
+                                                        ? 'bg-blue-50/40 hover:bg-blue-50/70'
+                                                        : 'hover:bg-slate-50/50'
+                                                }`}
+                                            >
+                                                <td className="py-3.5 px-5 text-center">
+                                                    <RankBadge rank={result.final_rank} size="sm" />
+                                                </td>
+                                                <td className="py-3.5 px-5 text-sm font-medium text-slate-900">
+                                                    {result.participant?.full_name}
+                                                </td>
+                                                <td className="py-3.5 px-5 text-right font-mono text-xs text-slate-500">
+                                                    {result.edas_score != null ? Number(result.edas_score).toFixed(6) : '-'}
+                                                </td>
+                                                <td className="py-3.5 px-5 text-center text-xs">
+                                                    <span className="font-medium text-emerald-600">{result.copeland_wins ?? '-'}</span>
+                                                    <span className="mx-1 text-slate-300">/</span>
+                                                    <span className="font-medium text-rose-500">{result.copeland_losses ?? '-'}</span>
+                                                    <span className="mx-1 text-slate-300">/</span>
+                                                    <span className="font-medium text-slate-500">{result.extra_payload?.ties ?? '-'}</span>
+                                                </td>
+                                                <td className="py-3.5 px-5 text-right">
+                                                    <span className={`font-semibold ${
+                                                        result.copeland_score > 0
+                                                            ? 'text-indigo-600'
+                                                            : result.copeland_score < 0
+                                                                ? 'text-rose-500'
+                                                                : 'text-slate-400'
+                                                    }`}>
+                                                        {result.copeland_score > 0 ? '+' : ''}{result.copeland_score}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3.5 px-5 text-center">
+                                                    {isAccepted ? (
+                                                        <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700">
+                                                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                            Diterima
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-medium text-slate-400">—</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
