@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import PipelineActionBar from '@/Components/Pipeline/PipelineActionBar';
 import PipelineGuide from '@/Components/Pipeline/PipelineGuide';
 import RankBadge from '@/Components/Pipeline/RankBadge';
@@ -29,6 +30,15 @@ export default function ResultStep({ period, completedRuns, finalResults, onNavi
                 actions={
                     results.length > 0 ? (
                         <div className="flex items-center gap-2">
+                            <Link
+                                href={route('pipeline.sensitivity', period.route_key)}
+                                className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 transition-all hover:bg-indigo-100"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                Analisis Sensitivitas
+                            </Link>
                             <a
                                 href={route('pipeline.result.export', period.route_key)}
                                 className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition-all hover:bg-emerald-100"
@@ -66,31 +76,42 @@ export default function ResultStep({ period, completedRuns, finalResults, onNavi
             ) : (
                 <>
                     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <div>
-                            <h3 className="text-lg font-semibold text-slate-900">Ringkasan Eksekusi</h3>
-                            {copelandRun && (
-                                <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-400">
-                                    <span className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1">
-                                        Kode Run: {copelandRun.run_code}
-                                    </span>
-                                    <span className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1">
-                                        Dieksekusi: {new Date(copelandRun.executed_at).toLocaleString('id-ID')}
-                                    </span>
-                                </div>
-                            )}
-                            <div className="mt-3 flex flex-wrap gap-3">
-                                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
-                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Peserta</div>
-                                    <div className="mt-0.5 text-xl font-bold text-slate-900">{totalResults}</div>
-                                </div>
-                                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
-                                    <div className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Diterima</div>
-                                    <div className="mt-0.5 text-xl font-bold text-blue-700">{Math.min(acceptedResults.length, ACCEPTED_COUNT)}</div>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
-                                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tidak Diterima</div>
-                                    <div className="mt-0.5 text-xl font-bold text-slate-500">{Math.max(totalResults - ACCEPTED_COUNT, 0)}</div>
-                                </div>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold text-slate-900">Ringkasan Eksekusi</h3>
+                                {copelandRun && (
+                                    <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-400">
+                                        <span className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1">
+                                            Kode Run: {copelandRun.run_code}
+                                        </span>
+                                        <span className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1">
+                                            Dieksekusi: {new Date(copelandRun.executed_at).toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <Link
+                                href={route('pipeline.sensitivity', period.route_key)}
+                                className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-indigo-700"
+                            >
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                Uji Kestabilan Ranking (Sensitivitas)
+                            </Link>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Peserta</div>
+                                <div className="mt-0.5 text-xl font-bold text-slate-900">{totalResults}</div>
+                            </div>
+                            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Diterima</div>
+                                <div className="mt-0.5 text-xl font-bold text-blue-700">{Math.min(acceptedResults.length, ACCEPTED_COUNT)}</div>
+                            </div>
+                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tidak Diterima</div>
+                                <div className="mt-0.5 text-xl font-bold text-slate-500">{Math.max(totalResults - ACCEPTED_COUNT, 0)}</div>
                             </div>
                         </div>
                     </div>

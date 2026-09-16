@@ -13,8 +13,8 @@ use App\Http\Controllers\Pipeline\BwmStepController;
 use App\Http\Controllers\Pipeline\EdasStepController;
 use App\Http\Controllers\Pipeline\CopelandStepController;
 use App\Http\Controllers\Pipeline\ResultStepController;
-
 use App\Http\Controllers\Pipeline\ResultExportController;
+use App\Http\Controllers\Pipeline\SensitivityAnalysisController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -65,6 +65,7 @@ Route::middleware('auth')->group(function () {
         // Step 6: Result
         Route::get('/result', [ResultStepController::class, 'show'])->name('result');
         Route::get('/result/export', [ResultExportController::class, 'export'])->name('result.export');
+        Route::get('/sensitivity', [SensitivityAnalysisController::class, 'index'])->name('sensitivity');
     });
 
     // ── Participants (standalone CRUD) ──
