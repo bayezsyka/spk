@@ -59,7 +59,7 @@ export const PIPELINE_GUIDES: Record<PipelineGuidePhaseKey, PipelineGuideEntry> 
                     items: [
                         'Data bisa dimasukkan manual atau melalui template Excel langsung dari pipeline.',
                         'Kolom Pre-Test dan Rapor diisi dengan nilai 0-100, lalu otomatis diklasifikasi ke skor 1-5 saat sinkronisasi.',
-                        'Kolom Jarak Domisili diisi dalam kilometer, lalu otomatis diklasifikasi ke skor 1-5 (semakin dekat semakin tinggi).',
+                        'Kolom Jarak Domisili diisi dalam kilometer, lalu otomatis diklasifikasi ke skor 1-5 (semakin dekat mendapat skor lebih tinggi sehingga diolah sebagai benefit).',
                         'Kolom Wawancara dan Kesiapan Pelatihan langsung diisi skor 1-5.',
                     ],
                 },

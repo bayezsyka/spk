@@ -100,7 +100,7 @@ class ParticipantScoreSyncService
      * Classify raw numeric values into 1-5 scores.
      *
      * C1 & C3 (Pre-Test & Rapor): 86-100→5, 71-85→4, 56-70→3, 41-55→2, <40→1
-     * C4 (Jarak Domisili/COST):   0-5km→5, >5-10→4, >10-20→3, >20-40→2, >40→1
+     * C4 (Jarak Domisili/BENEFIT pasca konversi): 0-5km→5, >5-10→4, >10-20→3, >20-40→2, >40→1
      */
     private function classifyScore(string $criterionCode, float $value): float
     {

@@ -62,7 +62,7 @@ class AssessmentPeriod extends Model
             'code' => 'C4',
             'name' => 'Jarak Domisili',
             'description' => 'Estimasi jarak tempuh ke lokasi pelatihan dalam kilometer.',
-            'attribute_type' => 'cost',
+            'attribute_type' => 'benefit',
             'input_type' => 'categorical',
             'sort_order' => 4,
             'is_active' => true,
